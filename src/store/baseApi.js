@@ -48,6 +48,7 @@ export const baseApi = createApi({
     "Access",
     "Backup",
     "Inventory",
+    "AssignedUnit",
   ],
   endpoints: () => ({}),
 });

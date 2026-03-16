@@ -408,9 +408,15 @@ export function useMilitaryActions({
     }
   };
 
-  const handleAcceptTransferRequest = async (requestId) => {
+  const handleAcceptTransferRequest = async (requestId, assignedUnitId) => {
+    const parsedAssignedUnitId = Number(assignedUnitId);
+    if (!Number.isInteger(parsedAssignedUnitId) || parsedAssignedUnitId <= 0) {
+      toast.error("Vui lòng chọn assignedUnit tiếp nhận trước khi nhận bảo đảm.");
+      return;
+    }
+
     try {
-      await acceptTransferRequest({ requestId }).unwrap();
+      await acceptTransferRequest({ requestId, assignedUnitId: parsedAssignedUnitId }).unwrap();
       toast.success("Đã nhận bảo đảm quân trang cho quân nhân.");
       await Promise.all([refetch(), refetchIncomingTransferRequests()]);
     } catch (err) {

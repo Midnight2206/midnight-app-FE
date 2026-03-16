@@ -1,7 +1,10 @@
+import { useEffect, useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { OverlayLoader } from "@/components/AppLoading";
 import { formatMilitaryTypeList } from "../typeUtils";
+import ExternalIncreaseForm from "./ExternalIncreaseForm";
 
 function formatGender(value) {
   const normalized = String(value || "").toUpperCase();
@@ -22,7 +25,30 @@ export default function IncreaseListTab({
   canManageTransfer,
   onAcceptTransferRequest,
   isAcceptingTransferRequest,
+  externalIncreaseForm,
+  onExternalIncreaseFieldChange,
+  onSubmitExternalIncrease,
+  isSubmittingExternalIncrease,
+  currentAdminUnitName,
+  assignedUnits,
+  militaryTypes,
 }) {
+  const [pendingAssignedUnits, setPendingAssignedUnits] = useState({});
+  const assignedUnitOptions = Array.isArray(assignedUnits) ? assignedUnits : [];
+
+  useEffect(() => {
+    setPendingAssignedUnits((prev) => {
+      const validIds = new Set(assignedUnitOptions.map((item) => String(item.id)));
+      const next = {};
+      for (const [requestId, assignedUnitId] of Object.entries(prev)) {
+        if (validIds.has(String(assignedUnitId))) {
+          next[requestId] = assignedUnitId;
+        }
+      }
+      return next;
+    });
+  }, [assignedUnitOptions]);
+
   return (
     <Card className="relative surface overflow-hidden">
       <OverlayLoader
@@ -31,6 +57,16 @@ export default function IncreaseListTab({
           (isFetchingIncomingTransferRequests && !isLoadingIncomingTransferRequests)
         }
         label="Đang cập nhật danh sách quân nhân tăng..."
+      />
+      <ExternalIncreaseForm
+        form={externalIncreaseForm}
+        onFieldChange={onExternalIncreaseFieldChange}
+        onSubmit={onSubmitExternalIncrease}
+        isSubmitting={isSubmittingExternalIncrease}
+        currentUnitName={currentAdminUnitName}
+        assignedUnits={assignedUnits}
+        militaryTypes={militaryTypes}
+        canManageTransfer={canManageTransfer}
       />
       <div className="border-b px-4 py-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -87,9 +123,18 @@ export default function IncreaseListTab({
                 const military = row.military || {};
                 const request = row.request || null;
                 const isPendingRequest = request?.id && row.type === "request";
-                const toUnitName = request?.toUnit?.name || military.assignedUnit || "-";
-                const fromUnitName = request?.fromUnit?.name || "-";
-                const transferInYear = request?.transferYear || military.unitTransferInYear || "-";
+                const toUnitName =
+                  request?.toUnit?.name ||
+                  military.assignedUnit ||
+                  military.transferInDetail?.toUnitName ||
+                  "-";
+                const fromUnitName =
+                  request?.fromUnit?.name || military.transferInDetail?.fromUnitName || "-";
+                const transferInYear =
+                  request?.transferYear ||
+                  military.transferInDetail?.transferYear ||
+                  military.unitTransferInYear ||
+                  "-";
                 const typeLabel = isPendingRequest
                   ? formatMilitaryTypeList(request?.type?.code || "-")
                   : formatMilitaryTypeList(military.types?.length ? military.types : military.type);
@@ -116,13 +161,37 @@ export default function IncreaseListTab({
                     {canManageTransfer && (
                       <td>
                         {isPendingRequest ? (
-                          <Button
-                            size="sm"
-                            onClick={() => onAcceptTransferRequest(request.id)}
-                            disabled={isAcceptingTransferRequest}
-                          >
-                            Nhận bảo đảm
-                          </Button>
+                          <div className="flex min-w-[240px] flex-col gap-2">
+                            <select
+                              value={pendingAssignedUnits[request.id] || ""}
+                              onChange={(event) =>
+                                setPendingAssignedUnits((prev) => ({
+                                  ...prev,
+                                  [request.id]: event.target.value,
+                                }))
+                              }
+                              className="h-8 rounded-md border border-border bg-background px-2 text-xs"
+                            >
+                              <option value="">Chọn assignedUnit</option>
+                              {assignedUnitOptions.map((item) => (
+                                <option key={item.id} value={String(item.id)}>
+                                  {item.name}
+                                </option>
+                              ))}
+                            </select>
+                            <Button
+                              size="sm"
+                              onClick={() =>
+                                onAcceptTransferRequest(
+                                  request.id,
+                                  pendingAssignedUnits[request.id] || "",
+                                )
+                              }
+                              disabled={isAcceptingTransferRequest}
+                            >
+                              Nhận bảo đảm
+                            </Button>
+                          </div>
                         ) : (
                           <span className="text-xs text-muted-foreground">-</span>
                         )}

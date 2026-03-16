@@ -9,12 +9,15 @@ import { getPaginationMeta } from "@/utils/pagination";
 import {
   useAcceptTransferRequestMutation,
   useCreateCutTransferRequestMutation,
+  useCreateMilitaryAssignedUnitMutation,
   useCreateMilitaryRegistrationYearMutation,
   useCreateMilitaryTypeMutation,
   useCreateMilitaryUnitMutation,
+  useDeleteMilitaryAssignedUnitMutation,
   useDeleteMilitaryTypeMutation,
   useDownloadMilitaryTemplateMutation,
   useDownloadRegistrationTemplateMutation,
+  useGetMilitaryAssignedUnitsQuery,
   useGetIncomingTransferRequestsQuery,
   useGetMilitariesQuery,
   useGetMilitaryRegistrationOptionsQuery,
@@ -26,7 +29,9 @@ import {
   useImportMilitaryRegistrationsMutation,
   usePreviewMilitaryRegistrationsImportMutation,
   useResetMilitariesMutation,
+  useTransferMilitaryAssuranceMutation,
   useUndoCutTransferRequestMutation,
+  useUpdateMilitaryAssignedUnitMutation,
   useUpdateMilitaryRegistrationsMutation,
 } from "@/features/military/militaryApi";
 import { MILITARY_LAST_QUERY_STORAGE_KEY_PREFIX } from "@/features/military/navigation";
@@ -44,6 +49,7 @@ import MilitaryListTab from "./components/MilitaryListTab";
 import IncreaseListTab from "./components/IncreaseListTab";
 import MilitarySizeListTab from "./components/MilitarySizeListTab";
 import MilitaryHeaderPanel from "./components/MilitaryHeaderPanel";
+import AssignedUnitManagementTab from "./components/AssignedUnitManagementTab";
 import {
   filterIncreaseRows,
   getIncomingTransferRequests,
@@ -141,7 +147,7 @@ export default function MilitaryPage() {
   const [activeViewTab, setActiveViewTab] = usePersistentTab(
     "military_active_view_tab",
     "military-list",
-    ["military-list", "size-list", "increase-list", "decrease-list"],
+    ["military-list", "size-list", "increase-list", "decrease-list", "assigned-unit-list"],
   );
   const [increaseQuickFilter, setIncreaseQuickFilter] = useState(() => {
     const value = String(searchParams.get("increase") || "")
@@ -170,6 +176,19 @@ export default function MilitaryPage() {
   const [openMilitaryImportDialog, setOpenMilitaryImportDialog] = useState(false);
   const [openRegistrationImportDialog, setOpenRegistrationImportDialog] = useState(false);
   const [militaryImportReport, setMilitaryImportReport] = useState(null);
+  const [externalIncreaseForm, setExternalIncreaseForm] = useState({
+    militaryCode: "",
+    fullname: "",
+    rank: "",
+    gender: "",
+    type: "",
+    position: "",
+    assignedUnitId: "",
+    initialCommissioningYear: "",
+    fromExternalUnitName: "",
+    transferYear: "",
+    note: "",
+  });
 
   const unitScopeKey = isSuperAdmin ? "superadmin" : "admin";
   const { data: unitsData, refetch: refetchUnits } = useGetMilitaryUnitsQuery(unitScopeKey, {
@@ -189,6 +208,40 @@ export default function MilitaryPage() {
     () => (Array.isArray(allUnitsData?.units) ? allUnitsData.units : []),
     [allUnitsData],
   );
+  const adminUnit = !isSuperAdmin ? units[0] : null;
+  const currentAdminUnitId = Number(adminUnit?.id || user?.unitId || 0);
+  const currentAdminUnitName = String(adminUnit?.name || user?.unit?.name || "").trim();
+  const selectedScopeUnitId = useMemo(() => {
+    if (isSuperAdmin) {
+      const parsed = Number(selectedUnitId);
+      return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+    }
+    const parsed = Number(adminUnit?.id || user?.unitId || 0);
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+  }, [adminUnit?.id, isSuperAdmin, selectedUnitId, user?.unitId]);
+  const selectedScopeUnitName = useMemo(() => {
+    if (isSuperAdmin) {
+      const matched = units.find((item) => Number(item.id) === Number(selectedUnitId));
+      return matched?.name || "";
+    }
+    return String(adminUnit?.name || user?.unit?.name || "").trim();
+  }, [adminUnit?.name, isSuperAdmin, selectedUnitId, units, user?.unit?.name]);
+  const assignedUnitsQueryArg = useMemo(
+    () => (selectedScopeUnitId ? { unitId: selectedScopeUnitId } : undefined),
+    [selectedScopeUnitId],
+  );
+  const {
+    data: assignedUnitsData,
+    error: assignedUnitsError,
+    isLoading: isLoadingAssignedUnits,
+    isFetching: isFetchingAssignedUnits,
+    refetch: refetchAssignedUnits,
+  } = useGetMilitaryAssignedUnitsQuery(assignedUnitsQueryArg, {
+    skip: !assignedUnitsQueryArg,
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
+  });
   const { data: yearsData, refetch: refetchYears } = useGetMilitaryRegistrationYearsQuery(undefined, {
     skip: !canAccess,
     refetchOnMountOrArgChange: true,
@@ -483,6 +536,14 @@ export default function MilitaryPage() {
   const [createMilitaryRegistrationYear, { isLoading: isCreatingRegistrationYear }] =
     useCreateMilitaryRegistrationYearMutation();
   const [resetMilitaries, { isLoading: isResetting }] = useResetMilitariesMutation();
+  const [transferMilitaryAssurance, { isLoading: isSubmittingExternalIncrease }] =
+    useTransferMilitaryAssuranceMutation();
+  const [createMilitaryAssignedUnit, { isLoading: isCreatingAssignedUnit }] =
+    useCreateMilitaryAssignedUnitMutation();
+  const [updateMilitaryAssignedUnit, { isLoading: isUpdatingAssignedUnit }] =
+    useUpdateMilitaryAssignedUnitMutation();
+  const [deleteMilitaryAssignedUnit, { isLoading: isDeletingAssignedUnit }] =
+    useDeleteMilitaryAssignedUnitMutation();
   const [updateMilitaryRegistrations, { isLoading: isSavingRegistrations }] =
     useUpdateMilitaryRegistrationsMutation();
   const [createCutTransferRequest, { isLoading: isCreatingCutTransferRequest }] =
@@ -553,9 +614,13 @@ export default function MilitaryPage() {
   );
   const outgoingMilitariesByYear = useMemo(
     () =>
-      militaries.filter(
-        (item) => Number(item.unitTransferOutYear || 0) === Number(selectedYear),
-      ),
+      militaries.filter((item) => {
+        const yearState = item?.yearState || null;
+        return (
+          yearState?.displayStatus === "transferred" &&
+          yearState?.isShowMilitary === true
+        );
+      }),
     [militaries, selectedYear],
   );
   const claimedCount = militaries.filter((item) => item.claimedByUserId).length;
@@ -571,8 +636,10 @@ export default function MilitaryPage() {
   const canImport =
     canOperateUnitAssurance;
 
-  const adminUnit = !isSuperAdmin ? units[0] : null;
-  const currentAdminUnitId = Number(adminUnit?.id || user?.unitId || 0);
+  const assignedUnits = useMemo(
+    () => (Array.isArray(assignedUnitsData?.assignedUnits) ? assignedUnitsData.assignedUnits : []),
+    [assignedUnitsData],
+  );
   const incomingTransferRequests = useMemo(
     () => getIncomingTransferRequests(incomingTransferRequestsData),
     [incomingTransferRequestsData],
@@ -604,6 +671,155 @@ export default function MilitaryPage() {
     () => getSizeTableCategories(registrationCategories, registrationMilitaries),
     [registrationCategories, registrationMilitaries],
   );
+
+  const handleExternalIncreaseFieldChange = (field, value) => {
+    setExternalIncreaseForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const resetExternalIncreaseForm = () => {
+    setExternalIncreaseForm({
+      militaryCode: "",
+      fullname: "",
+      rank: "",
+      gender: "",
+      type: "",
+      position: "",
+      assignedUnitId: "",
+      initialCommissioningYear: "",
+      fromExternalUnitName: "",
+      transferYear: "",
+      note: "",
+    });
+  };
+
+  useEffect(() => {
+    if (!externalIncreaseForm.assignedUnitId) return;
+    const exists = assignedUnits.some(
+      (item) => String(item.id) === String(externalIncreaseForm.assignedUnitId),
+    );
+    if (!exists) {
+      setExternalIncreaseForm((prev) => ({ ...prev, assignedUnitId: "" }));
+    }
+  }, [assignedUnits, externalIncreaseForm.assignedUnitId]);
+
+  const handleSubmitExternalIncrease = async () => {
+    if (!canManageTransfer) return;
+    if (!Number.isInteger(currentAdminUnitId) || currentAdminUnitId <= 0) {
+      toast.error("Không xác định được đơn vị tiếp nhận của tài khoản hiện tại.");
+      return;
+    }
+
+    const payload = {
+      militaryCode: String(externalIncreaseForm.militaryCode || "").trim(),
+      fullname: String(externalIncreaseForm.fullname || "").trim(),
+      rank: String(externalIncreaseForm.rank || "").trim(),
+      gender: String(externalIncreaseForm.gender || "").trim(),
+      type: String(externalIncreaseForm.type || "").trim(),
+      position: String(externalIncreaseForm.position || "").trim(),
+      assignedUnitId: Number(externalIncreaseForm.assignedUnitId),
+      initialCommissioningYear: Number(externalIncreaseForm.initialCommissioningYear),
+      fromUnitId: null,
+      toUnitId: currentAdminUnitId,
+      fromExternalUnitName: String(externalIncreaseForm.fromExternalUnitName || "").trim(),
+      transferYear: Number(externalIncreaseForm.transferYear),
+      note: String(externalIncreaseForm.note || "").trim() || undefined,
+    };
+
+    if (!payload.militaryCode) {
+      toast.error("Vui lòng nhập mã quân nhân.");
+      return;
+    }
+    if (!payload.fullname) {
+      toast.error("Vui lòng nhập họ tên quân nhân.");
+      return;
+    }
+    if (!payload.rank) {
+      toast.error("Vui lòng chọn cấp bậc.");
+      return;
+    }
+    if (!payload.gender) {
+      toast.error("Vui lòng chọn giới tính.");
+      return;
+    }
+    if (!payload.type) {
+      toast.error("Vui lòng chọn loại quân nhân.");
+      return;
+    }
+    if (!payload.position) {
+      toast.error("Vui lòng nhập chức vụ.");
+      return;
+    }
+    if (!Number.isInteger(payload.assignedUnitId) || payload.assignedUnitId <= 0) {
+      toast.error("Vui lòng chọn assignedUnit tiếp nhận.");
+      return;
+    }
+    if (
+      !Number.isInteger(payload.initialCommissioningYear) ||
+      payload.initialCommissioningYear < 1900 ||
+      payload.initialCommissioningYear > 2100
+    ) {
+      toast.error("Năm PH, CCĐ lần đầu không hợp lệ.");
+      return;
+    }
+    if (!payload.fromExternalUnitName) {
+      toast.error("Vui lòng nhập nguồn chuyển đến ngoài hệ thống.");
+      return;
+    }
+    if (
+      !Number.isInteger(payload.transferYear) ||
+      payload.transferYear < 1900 ||
+      payload.transferYear > 2100
+    ) {
+      toast.error("Năm chuyển đến không hợp lệ.");
+      return;
+    }
+
+    try {
+      await transferMilitaryAssurance(payload).unwrap();
+      toast.success("Đã tiếp nhận quân nhân từ ngoài hệ thống.");
+      resetExternalIncreaseForm();
+      await Promise.all([refetch(), refetchIncomingTransferRequests(), refetchAssignedUnits()]);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Tiếp nhận quân nhân thất bại."));
+    }
+  };
+
+  const handleCreateAssignedUnit = async (name) => {
+    if (!selectedScopeUnitId) {
+      throw new Error("UNIT_SCOPE_REQUIRED");
+    }
+    await createMilitaryAssignedUnit({
+      name,
+      unitId: selectedScopeUnitId,
+    }).unwrap();
+    await refetchAssignedUnits();
+  };
+
+  const handleUpdateAssignedUnit = async ({ assignedUnitId, name }) => {
+    if (!selectedScopeUnitId) {
+      throw new Error("UNIT_SCOPE_REQUIRED");
+    }
+    await updateMilitaryAssignedUnit({
+      assignedUnitId,
+      name,
+      unitId: selectedScopeUnitId,
+    }).unwrap();
+    await refetchAssignedUnits();
+  };
+
+  const handleDeleteAssignedUnit = async ({ assignedUnitId }) => {
+    if (!selectedScopeUnitId) {
+      throw new Error("UNIT_SCOPE_REQUIRED");
+    }
+    await deleteMilitaryAssignedUnit({
+      assignedUnitId,
+      unitId: selectedScopeUnitId,
+    }).unwrap();
+    await refetchAssignedUnits();
+  };
 
   useMilitaryEffects({
     canRegisterSizes,
@@ -779,6 +995,7 @@ export default function MilitaryPage() {
             <TabsTrigger value="size-list">Danh sách cỡ số theo năm</TabsTrigger>
             <TabsTrigger value="increase-list">Quân nhân tăng</TabsTrigger>
             <TabsTrigger value="decrease-list">Quân nhân giảm</TabsTrigger>
+            <TabsTrigger value="assigned-unit-list">Danh mục assignedUnit</TabsTrigger>
           </TabsList>
 
           <TabsContent value="military-list" className="mt-4">
@@ -844,6 +1061,13 @@ export default function MilitaryPage() {
               canManageTransfer={canManageTransfer}
               onAcceptTransferRequest={handleAcceptTransferRequest}
               isAcceptingTransferRequest={isAcceptingTransferRequest}
+              externalIncreaseForm={externalIncreaseForm}
+              onExternalIncreaseFieldChange={handleExternalIncreaseFieldChange}
+              onSubmitExternalIncrease={handleSubmitExternalIncrease}
+              isSubmittingExternalIncrease={isSubmittingExternalIncrease}
+              currentAdminUnitName={currentAdminUnitName}
+              assignedUnits={assignedUnits}
+              militaryTypes={militaryTypes}
             />
           </TabsContent>
 
@@ -853,6 +1077,25 @@ export default function MilitaryPage() {
               rows={outgoingMilitariesByYear}
               yearField="unitTransferOutYear"
               emptyMessage={`Không có quân nhân giảm trong năm ${selectedYear}.`}
+            />
+          </TabsContent>
+
+          <TabsContent value="assigned-unit-list" className="mt-4">
+            <AssignedUnitManagementTab
+              canManageAssignedUnits={canAccess}
+              selectedScopeUnitId={selectedScopeUnitId}
+              selectedScopeUnitName={selectedScopeUnitName}
+              isSuperAdmin={isSuperAdmin}
+              isLoading={isLoadingAssignedUnits}
+              isFetching={isFetchingAssignedUnits}
+              error={assignedUnitsError}
+              assignedUnits={assignedUnits}
+              onCreateAssignedUnit={handleCreateAssignedUnit}
+              isCreatingAssignedUnit={isCreatingAssignedUnit}
+              onUpdateAssignedUnit={handleUpdateAssignedUnit}
+              isUpdatingAssignedUnit={isUpdatingAssignedUnit}
+              onDeleteAssignedUnit={handleDeleteAssignedUnit}
+              isDeletingAssignedUnit={isDeletingAssignedUnit}
             />
           </TabsContent>
         </Tabs>

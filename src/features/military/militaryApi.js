@@ -22,6 +22,19 @@ export const militaryApi = baseApi.injectEndpoints({
       providesTags: [{ type: "Unit", id: "MILITARY_UNITS" }],
     }),
 
+    getMilitaryAssignedUnits: builder.query({
+      query: (params = {}) => ({
+        url: "/militaries/assigned-units",
+        method: "get",
+        params,
+      }),
+      transformResponse: (response) => response?.data ?? response ?? {},
+      providesTags: (result, error, params) => [
+        { type: "AssignedUnit", id: "LIST" },
+        { type: "AssignedUnit", id: `UNIT_${params?.unitId || "SELF"}` },
+      ],
+    }),
+
     getMilitaryTypes: builder.query({
       query: () => ({
         url: "/militaries/types",
@@ -155,9 +168,10 @@ export const militaryApi = baseApi.injectEndpoints({
     }),
 
     acceptTransferRequest: builder.mutation({
-      query: ({ requestId }) => ({
+      query: ({ requestId, assignedUnitId }) => ({
         url: `/militaries/transfers/${requestId}/accept`,
         method: "post",
+        data: { assignedUnitId },
       }),
       invalidatesTags: [
         { type: "Military", id: "LIST" },
@@ -211,6 +225,33 @@ export const militaryApi = baseApi.injectEndpoints({
       invalidatesTags: [{ type: "Unit", id: "MILITARY_UNITS" }],
     }),
 
+    createMilitaryAssignedUnit: builder.mutation({
+      query: (data) => ({
+        url: "/militaries/assigned-units",
+        method: "post",
+        data,
+      }),
+      invalidatesTags: [{ type: "AssignedUnit", id: "LIST" }],
+    }),
+
+    updateMilitaryAssignedUnit: builder.mutation({
+      query: ({ assignedUnitId, ...data }) => ({
+        url: `/militaries/assigned-units/${assignedUnitId}`,
+        method: "put",
+        data,
+      }),
+      invalidatesTags: [{ type: "AssignedUnit", id: "LIST" }],
+    }),
+
+    deleteMilitaryAssignedUnit: builder.mutation({
+      query: ({ assignedUnitId, unitId }) => ({
+        url: `/militaries/assigned-units/${assignedUnitId}`,
+        method: "delete",
+        params: unitId ? { unitId } : undefined,
+      }),
+      invalidatesTags: [{ type: "AssignedUnit", id: "LIST" }],
+    }),
+
     downloadMilitaryTemplate: builder.mutation({
       query: (params = {}) => ({
         url: "/militaries/template",
@@ -243,6 +284,7 @@ export const militaryApi = baseApi.injectEndpoints({
 export const {
   useGetMilitariesQuery,
   useGetMilitaryUnitsQuery,
+  useGetMilitaryAssignedUnitsQuery,
   useGetMilitaryTypesQuery,
   useCreateMilitaryTypeMutation,
   useDeleteMilitaryTypeMutation,
@@ -262,6 +304,9 @@ export const {
   useImportMilitaryRegistrationsMutation,
   usePreviewMilitaryRegistrationsImportMutation,
   useCreateMilitaryUnitMutation,
+  useCreateMilitaryAssignedUnitMutation,
+  useUpdateMilitaryAssignedUnitMutation,
+  useDeleteMilitaryAssignedUnitMutation,
   useDownloadMilitaryTemplateMutation,
   useImportMilitariesMutation,
   useResetMilitariesMutation,

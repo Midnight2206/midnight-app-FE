@@ -1,35 +1,28 @@
 import { Button } from "@/components/ui/button";
 
-function toSafeYear(value) {
-  const year = Number(value || 0);
-  return Number.isFinite(year) ? year : 0;
-}
-
 export default function MilitaryTransferActionCell({
   military,
-  selectedYear,
-  currentAdminUnitId,
   isSubmitting,
   onUndo,
   onOpenCut,
 }) {
-  const pendingTransferYear = toSafeYear(military?.pendingTransferRequest?.transferYear);
-  const acceptedTransferYear = toSafeYear(military?.acceptedTransferRequest?.transferYear);
-  const transferOutYear = toSafeYear(military?.unitTransferOutYear);
+  const yearState = military?.yearState || null;
+  const requestTransferState =
+    yearState?.isHasReqTransfer ?? military?.isHasReqTransfer ?? false;
+  const displayStatus = yearState?.displayStatus || military?.displayStatus || null;
+  const canCutFromHelper =
+    typeof yearState?.canCut === "boolean"
+      ? yearState.canCut
+      : typeof military?.canCut === "boolean"
+        ? military.canCut
+        : null;
 
-  const pendingInSelectedYear =
-    Boolean(military?.pendingTransferRequest) &&
-    pendingTransferYear > 0 &&
-    pendingTransferYear <= Number(selectedYear);
-
-  const acceptedInSelectedYear =
-    military?.acceptedTransferRequest?.status === "ACCEPTED" &&
-    military?.acceptedTransferRequest?.fromUnitId === currentAdminUnitId &&
-    acceptedTransferYear > 0 &&
-    acceptedTransferYear <= Number(selectedYear);
+  const pendingInSelectedYear = requestTransferState === "waiting";
+  const acceptedInSelectedYear = displayStatus === "transferred";
 
   const canCutInSelectedYear =
-    transferOutYear === 0 || transferOutYear > Number(selectedYear);
+    typeof canCutFromHelper === "boolean" ? canCutFromHelper : false;
+  const matchedRequestId = yearState?.matchedRequest?.id || null;
 
   if (pendingInSelectedYear) {
     return (
@@ -37,8 +30,8 @@ export default function MilitaryTransferActionCell({
         type="button"
         size="sm"
         variant="destructive"
-        onClick={() => onUndo(military.pendingTransferRequest.id)}
-        disabled={isSubmitting}
+        onClick={() => matchedRequestId && onUndo(matchedRequestId)}
+        disabled={isSubmitting || !matchedRequestId}
       >
         Hoàn tác
       </Button>
@@ -53,17 +46,13 @@ export default function MilitaryTransferActionCell({
     );
   }
 
-  if (!canCutInSelectedYear) {
-    return <span className="text-xs text-muted-foreground">-</span>;
-  }
-
   return (
     <Button
       type="button"
       size="sm"
       variant="outline"
       onClick={() => onOpenCut(military)}
-      disabled={isSubmitting}
+      disabled={isSubmitting || !canCutInSelectedYear}
     >
       Cắt bảo đảm
     </Button>
