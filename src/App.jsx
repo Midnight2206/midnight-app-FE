@@ -1,13 +1,14 @@
-import './App.css'
-import AppRouter from "@/components/AppRouter"
-import ErrorBoundary from '@/components/ErrorBoundary'
-function App() {
-
+import AppRouter from "@/components/AppRouter";
+import AuthInitializer from "@/components/AuthInitializer";
+import { ConfirmDialogProvider } from "@/components/ConfirmDialogProvider";
+export function App() {
   return (
-    <ErrorBoundary>
-      <AppRouter />
-    </ErrorBoundary>
-  )
+    <AuthInitializer>
+      <ConfirmDialogProvider>
+        <AppRouter />
+      </ConfirmDialogProvider>
+    </AuthInitializer>
+  );
 }
 
-export default App
+export default App;

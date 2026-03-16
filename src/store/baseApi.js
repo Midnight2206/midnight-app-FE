@@ -1,30 +1,53 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
-import http from '@/utils/http';
+import { createApi } from "@reduxjs/toolkit/query/react";
+import http from "@/utils/http";
+
 const axiosBaseQuery =
   () =>
-  async ({ url, method, data, params }) => {
+  async ({
+    url,
+    method = "get",
+    data,
+    params,
+    responseType,
+    headers,
+    skipRefresh,
+  }) => {
     try {
-      if (method === "get") {
-        const result = await http.get(url, { params });
-        return { data: result.data };
-      }
+      const isBodyless = method === "get" || method === "delete";
+      const config = {
+        params,
+        responseType,
+        headers,
+        skipRefresh,
+      };
 
-      const result = await http[method](url, data, { params });
-      return { data: result.data };
-    } catch (axiosError) {
-      let err = axiosError;
+      const result = isBodyless
+        ? await http[method](url, config)
+        : await http[method](url, data, config);
+
+      return { data: result };
+    } catch (error) {
       return {
         error: {
-          status: err.response?.status,
-          data: err.response?.data || err.message,
+          status: error.response?.status,
+          data: error.response?.data ?? { message: error.message },
         },
       };
     }
   };
 
 export const baseApi = createApi({
-  reducerPath: 'baseApi',
+  reducerPath: "baseApi",
   baseQuery: axiosBaseQuery(),
-  tagTypes: ['User', 'Posts', 'Comments'],
+  tagTypes: [
+    "User",
+    "Category",
+    "Military",
+    "Account",
+    "Unit",
+    "Access",
+    "Backup",
+    "Inventory",
+  ],
   endpoints: () => ({}),
 });

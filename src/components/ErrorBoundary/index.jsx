@@ -2,32 +2,32 @@ import { Component } from "react";
 import { toast } from "sonner";
 
 export default class ErrorBoundary extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
+  state = { hasError: false };
 
-  static getDerivedStateFromError(error) {
-    // Cập nhật state để render fallback UI
-    return { hasError: true, error };
+  static getDerivedStateFromError() {
+    return { hasError: true };
   }
 
   componentDidCatch(error, info) {
-    // Bạn có thể log ra server ở đây
-    console.error("ErrorBoundary caught an error:", error, info);
+    console.error("ErrorBoundary:", error, info);
     toast.error("Something went wrong!");
   }
 
   render() {
     if (this.state.hasError) {
-      // Fallback UI
       return (
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <h2 className="text-xl font-bold">Something went wrong.</h2>
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-center space-y-4">
+            <h2 className="text-xl font-bold">Something went wrong</h2>
             <p className="text-muted-foreground">
-              Please try refreshing the page.
+              Please refresh the page or try again later.
             </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 rounded bg-primary text-white"
+            >
+              Reload
+            </button>
           </div>
         </div>
       );
