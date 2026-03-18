@@ -47,6 +47,15 @@ export const authApi = baseApi.injectEndpoints({
       providesTags: ["User"],
     }),
 
+    cancelPasswordChangeRequest: builder.mutation({
+      query: () => ({
+        url: "/auth/password-change/cancel",
+        method: "post",
+        data: null,
+      }),
+      invalidatesTags: ["User"],
+    }),
+
     requestPasswordChange: builder.mutation({
       query: (data) => ({
         url: "/auth/password-change/request",
@@ -114,6 +123,7 @@ export const {
   useUpdateMyProfileMutation,
   useGetMySessionsQuery,
   useGetPasswordChangeStatusQuery,
+  useCancelPasswordChangeRequestMutation,
   useRequestPasswordChangeMutation,
   useConfirmPasswordChangeMutation,
   useLazyGetCurrentUserQuery,

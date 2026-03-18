@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 
 import {
+  useCancelPasswordChangeRequestMutation,
   useGetMyProfileQuery,
   useGetMySessionsQuery,
   useGetPasswordChangeStatusQuery,
@@ -86,6 +87,8 @@ export default function ProfilePage() {
   const { data: sessionsResponse, isLoading: isSessionsLoading } = useGetMySessionsQuery();
   const { data: passwordStatusResponse } = useGetPasswordChangeStatusQuery();
   const [updateMyProfile, { isLoading: isSavingProfile }] = useUpdateMyProfileMutation();
+  const [cancelPasswordChangeRequest, { isLoading: isCancellingPasswordChange }] =
+    useCancelPasswordChangeRequestMutation();
   const [requestPasswordChange, { isLoading: isRequestingPasswordChange }] =
     useRequestPasswordChangeMutation();
 
@@ -149,6 +152,15 @@ export default function ProfilePage() {
       toast.error(getApiErrorMessage(error, "Không thể gửi yêu cầu đổi mật khẩu."));
     }
   });
+
+  const handleCancelPasswordChange = async () => {
+    try {
+      await cancelPasswordChangeRequest().unwrap();
+      toast.success("Đã hủy yêu cầu đổi mật khẩu.");
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Không thể hủy yêu cầu đổi mật khẩu."));
+    }
+  };
 
   if (isProfileLoading) {
     return (
@@ -355,6 +367,21 @@ export default function ProfilePage() {
                     defaultText={pendingMeta.buttonText}
                   />
                 </Button>
+                {passwordStatus?.isPending ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCancelPasswordChange}
+                    disabled={isCancellingPasswordChange}
+                    className="w-full"
+                  >
+                    <LoadingButtonLabel
+                      loading={isCancellingPasswordChange}
+                      loadingText="Đang hủy yêu cầu..."
+                      defaultText="Hủy yêu cầu đổi mật khẩu"
+                    />
+                  </Button>
+                ) : null}
               </form>
             </CardContent>
           </Card>
