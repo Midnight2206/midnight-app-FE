@@ -171,7 +171,7 @@ export default function MilitaryPage() {
   const [cutTransferMilitary, setCutTransferMilitary] = useState(null);
   const [cutTransferTypeId, setCutTransferTypeId] = useState("");
   const [cutTransferTargetUnitId, setCutTransferTargetUnitId] = useState("");
-  const [cutTransferYear, setCutTransferYear] = useState(new Date().getFullYear());
+  const [cutTransferYear, setCutTransferYear] = useState(() => new Date().getFullYear());
   const [cutTransferNote, setCutTransferNote] = useState("");
   const [openMilitaryImportDialog, setOpenMilitaryImportDialog] = useState(false);
   const [openRegistrationImportDialog, setOpenRegistrationImportDialog] = useState(false);
@@ -990,13 +990,15 @@ export default function MilitaryPage() {
         />
 
         <Tabs value={activeViewTab} onValueChange={setActiveViewTab}>
-          <TabsList>
-            <TabsTrigger value="military-list">Danh sách quân nhân</TabsTrigger>
-            <TabsTrigger value="size-list">Danh sách cỡ số theo năm</TabsTrigger>
-            <TabsTrigger value="increase-list">Quân nhân tăng</TabsTrigger>
-            <TabsTrigger value="decrease-list">Quân nhân giảm</TabsTrigger>
-            <TabsTrigger value="assigned-unit-list">Danh mục assignedUnit</TabsTrigger>
-          </TabsList>
+          <div className="-mx-1 overflow-x-auto px-1 pb-1">
+            <TabsList className="inline-flex min-w-max">
+              <TabsTrigger value="military-list">Danh sách quân nhân</TabsTrigger>
+              <TabsTrigger value="size-list">Danh sách cỡ số theo năm</TabsTrigger>
+              <TabsTrigger value="increase-list">Quân nhân tăng</TabsTrigger>
+              <TabsTrigger value="decrease-list">Quân nhân giảm</TabsTrigger>
+              <TabsTrigger value="assigned-unit-list">Danh mục assignedUnit</TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="military-list" className="mt-4">
             <MilitaryListTab

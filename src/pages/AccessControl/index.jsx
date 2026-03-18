@@ -15,6 +15,7 @@ import {
 import { ACCESS_RULES } from "@/features/auth/authorization";
 import { useAuthorization } from "@/features/auth/useAuthorization";
 import { getApiErrorMessage } from "@/utils/apiError";
+import DashboardPageShell from "@/layouts/components/DashboardPageShell";
 import AccessSyncCard from "./components/AccessSyncCard";
 import CreateRoleCard from "./components/CreateRoleCard";
 import RolePermissionCard from "./components/RolePermissionCard";
@@ -268,7 +269,11 @@ export default function AccessControlPage() {
   }
 
   return (
-    <div className="relative space-y-4">
+    <DashboardPageShell
+      title="Phân quyền hệ thống"
+      description="Đồng bộ permission, tạo role mới và phân vai trò cho người dùng ngay trong dashboard."
+      className="relative space-y-4 p-4 md:p-6"
+    >
       <OverlayLoader show={isRefreshingAccess && !isBootstrappingAccess} label="Đang cập nhật dữ liệu phân quyền..." />
       <AccessSyncCard onSync={handleSyncPermissions} isSyncingPermissions={isSyncingPermissions} />
       <CreateRoleCard
@@ -278,7 +283,7 @@ export default function AccessControlPage() {
         isCreatingRole={isCreatingRole}
       />
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="grid gap-4 2xl:grid-cols-2">
         <RolePermissionCard
           roleList={roleList}
           selectedRoleId={selectedRoleId}
@@ -314,6 +319,6 @@ export default function AccessControlPage() {
           userRoleDirty={userRoleDirty}
         />
       </div>
-    </div>
+    </DashboardPageShell>
   );
 }

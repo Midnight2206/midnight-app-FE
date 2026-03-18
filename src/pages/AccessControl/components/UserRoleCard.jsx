@@ -62,7 +62,11 @@ export default function UserRoleCard({
                 ))}
             </select>
 
-            <Button type="submit" disabled={isSavingUserRole || !userRoleDirty}>
+            <Button
+              className="w-full sm:w-auto"
+              type="submit"
+              disabled={isSavingUserRole || !userRoleDirty}
+            >
               {isSavingUserRole ? "Đang lưu..." : "Lưu role user"}
             </Button>
           </>
@@ -71,4 +75,3 @@ export default function UserRoleCard({
     </Card>
   );
 }
-

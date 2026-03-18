@@ -64,7 +64,7 @@ export default function RolePermissionCard({
               </select>
             </div>
 
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <span>Đang hiển thị {filteredPermissionList.length} quyền</span>
               <span>|</span>
               <span>Đã chọn {selectedPermissionCodes.length} quyền</span>
@@ -72,9 +72,10 @@ export default function RolePermissionCard({
               <span>{rolePermissionDirty ? "Có thay đổi chưa lưu" : "Đã đồng bộ"}</span>
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="grid gap-2 sm:flex sm:flex-wrap">
               <Button
                 type="button"
+                className="w-full sm:w-auto"
                 variant="outline"
                 onClick={onSelectAllVisiblePermissions}
                 disabled={filteredPermissionList.length === 0}
@@ -83,6 +84,7 @@ export default function RolePermissionCard({
               </Button>
               <Button
                 type="button"
+                className="w-full sm:w-auto"
                 variant="outline"
                 onClick={onClearAllVisiblePermissions}
                 disabled={filteredPermissionList.length === 0}
@@ -118,7 +120,11 @@ export default function RolePermissionCard({
               )}
             </div>
 
-            <Button type="submit" disabled={isSavingRolePermissions || !rolePermissionDirty}>
+            <Button
+              className="w-full sm:w-auto"
+              type="submit"
+              disabled={isSavingRolePermissions || !rolePermissionDirty}
+            >
               {isSavingRolePermissions ? "Đang lưu..." : "Lưu phân quyền role"}
             </Button>
           </>
@@ -127,4 +133,3 @@ export default function RolePermissionCard({
     </Card>
   );
 }
-

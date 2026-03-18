@@ -228,35 +228,39 @@ export default function CategoryPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-4 sm:p-6">
       <Tabs defaultValue="categories" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="categories">Category</TabsTrigger>
-          <TabsTrigger value="versions">Phiên bản</TabsTrigger>
-          <TabsTrigger value="colors">Màu sắc</TabsTrigger>
-        </TabsList>
+        <div className="-mx-1 overflow-x-auto px-1 pb-1">
+          <TabsList className="inline-flex min-w-max">
+            <TabsTrigger value="categories">Category</TabsTrigger>
+            <TabsTrigger value="versions">Phiên bản</TabsTrigger>
+            <TabsTrigger value="colors">Màu sắc</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="categories">
           <Card className="p-4 space-y-4">
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <h2 className="font-semibold">Danh mục quân trang</h2>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                 <Input
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder="Tìm theo tên"
-                  className="w-64"
+                  className="w-full sm:w-64"
                 />
                 <select
                   value={statusFilter}
                   onChange={(event) => setStatusFilter(event.target.value)}
-                  className="h-9 rounded-md border bg-background px-3 text-sm"
+                  className="h-9 w-full rounded-md border bg-background px-3 text-sm sm:w-auto"
                 >
                   <option value="active">Đang hoạt động</option>
                   <option value="deleted">Đã xoá</option>
                   <option value="all">Tất cả</option>
                 </select>
-                <Button type="button" onClick={openCreateModal}>Thêm category</Button>
+                <Button type="button" onClick={openCreateModal} className="w-full sm:w-auto">
+                  Thêm category
+                </Button>
               </div>
             </div>
 
@@ -346,13 +350,13 @@ export default function CategoryPage() {
         <TabsContent value="versions">
           <Card className="p-4 space-y-3">
             <h2 className="font-semibold">Phiên bản</h2>
-            <form onSubmit={handleCreateVersion} className="flex items-center gap-2">
+            <form onSubmit={handleCreateVersion} className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <Input
                 value={versionName}
                 onChange={(event) => setVersionName(event.target.value)}
                 placeholder="Tên phiên bản"
               />
-              <Button type="submit" disabled={isCreatingVersion}>
+              <Button type="submit" disabled={isCreatingVersion} className="w-full sm:w-auto">
                 {isCreatingVersion ? "Đang thêm..." : "Thêm"}
               </Button>
             </form>
@@ -381,13 +385,13 @@ export default function CategoryPage() {
         <TabsContent value="colors">
           <Card className="p-4 space-y-3">
             <h2 className="font-semibold">Màu sắc</h2>
-            <form onSubmit={handleCreateColor} className="flex items-center gap-2">
+            <form onSubmit={handleCreateColor} className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <Input
                 value={colorName}
                 onChange={(event) => setColorName(event.target.value)}
                 placeholder="Tên màu sắc"
               />
-              <Button type="submit" disabled={isCreatingColor}>
+              <Button type="submit" disabled={isCreatingColor} className="w-full sm:w-auto">
                 {isCreatingColor ? "Đang thêm..." : "Thêm"}
               </Button>
             </form>

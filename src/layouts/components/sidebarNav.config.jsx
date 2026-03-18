@@ -4,11 +4,9 @@ import {
   FileText,
   CheckSquare,
   Shield,
-  KeyRound,
-  Database,
   Warehouse,
 } from "lucide-react";
-import { ACCESS_RULES } from "@/features/auth/authorization";
+import { ACCESS_RULES, PERMISSION_PREFIXES } from "@/features/auth/authorization";
 
 export const sidebarNavItems = [
   {
@@ -46,24 +44,16 @@ export const sidebarNavItems = [
     accessRule: ACCESS_RULES.sizeRegistrationPage,
   },
   {
-    name: "Dashboard tài khoản",
-    path: "/dashboard/accounts/create",
-    activePrefix: "/dashboard/accounts",
+    name: "Dashboard hệ thống",
+    path: "/dashboard",
+    activePrefix: "/dashboard",
     icon: <Shield className="h-4 w-4" />,
-    accessRule: ACCESS_RULES.accountDashboardPage,
-  },
-  {
-    name: "Quản lý phân quyền",
-    path: "/dashboard/access",
-    activePrefix: "/dashboard/access",
-    icon: <KeyRound className="h-4 w-4" />,
-    accessRule: ACCESS_RULES.accessControlPage,
-  },
-  {
-    name: "Khôi phục dữ liệu",
-    path: "/dashboard/backups",
-    activePrefix: "/dashboard/backups",
-    icon: <Database className="h-4 w-4" />,
-    accessRule: ACCESS_RULES.backupRecoveryPage,
+    accessRule: {
+      anyPermissionPrefixes: [
+        PERMISSION_PREFIXES.ACCOUNTS,
+        PERMISSION_PREFIXES.ACCESS,
+        PERMISSION_PREFIXES.BACKUPS,
+      ],
+    },
   },
 ];

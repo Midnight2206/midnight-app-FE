@@ -16,6 +16,7 @@ import {
   useRunBackupNowMutation,
 } from "@/features/backups/backupApi";
 import { getApiErrorMessage } from "@/utils/apiError";
+import DashboardPageShell from "@/layouts/components/DashboardPageShell";
 
 function formatBytes(bytes = 0) {
   const value = Number(bytes || 0);
@@ -126,37 +127,41 @@ export default function BackupRecoveryPage() {
   }
 
   return (
-    <div className="relative space-y-4 p-4 md:p-6">
+    <DashboardPageShell
+      title="Khôi phục dữ liệu"
+      description="Quản lý backup thủ công và khôi phục dữ liệu từ Google Drive trong cùng dashboard."
+      className="relative space-y-4 p-4 md:p-6"
+    >
       <OverlayLoader show={busy || isFetching} label="Đang xử lý dữ liệu backup..." />
 
-      <Card className="surface p-5">
+      <Card className="surface p-4 sm:p-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-lg font-semibold">Khôi phục dữ liệu từ backup Drive</h1>
+            <h2 className="text-lg font-semibold">Backup Drive</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Chỉ super admin mới có quyền chạy backup thủ công và khôi phục DB.
             </p>
           </div>
 
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => refetch()} disabled={busy || isFetching}>
+          <div className="grid gap-2 sm:flex">
+            <Button className="w-full sm:w-auto" variant="outline" onClick={() => refetch()} disabled={busy || isFetching}>
               Làm mới
             </Button>
-            <Button onClick={handleRunBackupNow} disabled={busy}>
+            <Button className="w-full sm:w-auto" onClick={handleRunBackupNow} disabled={busy}>
               Chạy backup ngay
             </Button>
           </div>
         </div>
       </Card>
 
-      <Card className="surface p-5">
-        <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+      <Card className="surface p-4 sm:p-5">
+        <div className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
           <span>Trạng thái scheduler: {runtimeState.hasScheduler ? "ON" : "OFF"}</span>
           <span>|</span>
           <span>Tác vụ hiện tại: {runtimeState.activeTask || "idle"}</span>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="-mx-4 overflow-x-auto sm:mx-0">
           <table className="w-full min-w-[760px] text-sm">
             <thead>
               <tr className="border-b border-border/70 text-left text-xs uppercase tracking-wide text-muted-foreground">
@@ -214,20 +219,20 @@ export default function BackupRecoveryPage() {
           <SectionLoader label="Chưa có file backup phù hợp trong thư mục Google Drive." />
         )}
 
-        <div className="mt-4 flex flex-wrap items-center gap-2">
+        <div className="mt-4 grid gap-2 sm:flex sm:flex-wrap sm:items-center">
           <Input
             value={pageToken}
             onChange={(event) => setPageToken(event.target.value.trim())}
             placeholder="Nhập pageToken để xem trang khác (nếu cần)"
-            className="max-w-md"
+            className="w-full sm:max-w-md"
           />
           {nextPageToken && (
-            <Button variant="outline" onClick={() => setPageToken(nextPageToken)}>
+            <Button className="w-full sm:w-auto" variant="outline" onClick={() => setPageToken(nextPageToken)}>
               Trang kế tiếp
             </Button>
           )}
         </div>
       </Card>
-    </div>
+    </DashboardPageShell>
   );
 }

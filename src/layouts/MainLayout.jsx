@@ -1,25 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Menu } from "lucide-react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { toast } from "sonner";
 import Sidebar from "@/layouts/components/Sidebar";
-import ToggleTheme from "@/layouts/components/ToggleTheme";
 import EmailVerifyBanner from "@/components/VerifyEmailBanner";
 import VerifyFloatingWarning from "@/components/VerifyFloatingWarning";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import { canAccessByRule } from "@/features/auth/authorization";
 import { useRequestVerifyEmailMutation } from "@/features/auth/authApi";
 import { setEmailVerifyRequestState } from "@/features/ui/uiSlice";
-import { dashboardHeaderMenuItems } from "@/layouts/components/headerDashboardMenu.config";
 import { Button } from "@/components/ui/button";
 import { getApiErrorMessage } from "@/utils/apiError";
-
-function getVisibleDashboardHeaderItems(user) {
-  return dashboardHeaderMenuItems.filter((item) =>
-    canAccessByRule(user, item.accessRule),
-  );
-}
 
 export default function MainLayout() {
   const dispatch = useDispatch();
@@ -30,22 +21,10 @@ export default function MainLayout() {
   const emailVerifyLastRequestedAt = useSelector(
     (state) => state.ui.banners.emailVerifyLastRequestedAt || 0,
   );
-  const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [nowTs, setNowTs] = useState(Date.now());
+  const [nowTs, setNowTs] = useState(() => Date.now());
   const [requestVerifyEmail, { isLoading: isVerifyingEmail }] =
     useRequestVerifyEmailMutation();
-
-  const visibleDashboardHeaderItems = useMemo(
-    () => getVisibleDashboardHeaderItems(user),
-    [user],
-  );
-
-  const showDashboardHeaderMenu =
-    visibleDashboardHeaderItems.length > 0 ||
-    location.pathname.startsWith("/dashboard/accounts") ||
-    location.pathname.startsWith("/dashboard/access") ||
-    location.pathname.startsWith("/dashboard/backups");
 
   useEffect(() => {
     if (!user?.verifiedAt) return;
@@ -58,7 +37,6 @@ export default function MainLayout() {
   }, [dispatch, user?.verifiedAt]);
 
   useEffect(() => {
-    setNowTs(Date.now());
     if (emailVerifyCooldownUntil <= Date.now()) return undefined;
     const id = window.setInterval(() => {
       setNowTs(Date.now());
@@ -66,7 +44,10 @@ export default function MainLayout() {
     return () => window.clearInterval(id);
   }, [emailVerifyCooldownUntil]);
 
-  const cooldownMsRemaining = Math.max(0, Number(emailVerifyCooldownUntil) - nowTs);
+  const cooldownMsRemaining = Math.max(
+    0,
+    Number(emailVerifyCooldownUntil) - nowTs,
+  );
   const cooldownSecondsRemaining = Math.ceil(cooldownMsRemaining / 1000);
   const verifyButtonDisabled = isVerifyingEmail || cooldownMsRemaining > 0;
 
@@ -74,7 +55,9 @@ export default function MainLayout() {
     if (!user?.id) return;
     setNowTs(Date.now());
     if (cooldownMsRemaining > 0) {
-      toast.info(`Vui lòng chờ ${cooldownSecondsRemaining}s trước khi gửi lại email xác minh.`);
+      toast.info(
+        `Vui lòng chờ ${cooldownSecondsRemaining}s trước khi gửi lại email xác minh.`,
+      );
       return;
     }
     try {
@@ -101,7 +84,9 @@ export default function MainLayout() {
             requestedAt: Date.now(),
           }),
         );
-        toast.info(`Vui lòng chờ ${seconds}s trước khi gửi lại email xác minh.`);
+        toast.info(
+          `Vui lòng chờ ${seconds}s trước khi gửi lại email xác minh.`,
+        );
         return;
       }
 
@@ -122,43 +107,20 @@ export default function MainLayout() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-dvh overflow-hidden">
       <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
 
-      <main className="relative flex flex-1 flex-col overflow-hidden">
-        <div className="border-b border-border/70 bg-background/70 px-3 py-3 backdrop-blur md:px-4">
+      <main className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="sticky top-0 z-20 border-b border-border/70 bg-background/80 px-3 py-2 backdrop-blur md:px-4">
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="icon-sm"
-                className="md:hidden"
-                onClick={() => setMobileOpen(true)}
-              >
-                <Menu className="h-4 w-4" />
-              </Button>
-
-              <div className="flex flex-wrap items-center gap-2">
-                {showDashboardHeaderMenu &&
-                  visibleDashboardHeaderItems.map((item) => (
-                    <NavLink
-                      key={item.path}
-                      to={item.path}
-                      className={({ isActive }) =>
-                        `rounded-xl border px-3 py-1.5 text-xs font-medium transition-all md:px-3.5 md:py-2 md:text-sm ${
-                          isActive
-                            ? "border-primary/40 bg-primary text-primary-foreground shadow-sm"
-                            : "border-border/70 bg-background/70 hover:bg-accent"
-                        }`
-                      }
-                    >
-                      {item.label}
-                    </NavLink>
-                  ))}
-              </div>
-            </div>
-
-            <ToggleTheme />
+            <Button
+              variant="outline"
+              size="icon-sm"
+              className="md:hidden"
+              onClick={() => setMobileOpen(true)}
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 
@@ -172,7 +134,7 @@ export default function MainLayout() {
         />
         <VerifyFloatingWarning user={user} />
 
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto overflow-x-hidden">
           <ErrorBoundary>
             <div className="page-shell animate-fade-in">
               <Outlet />

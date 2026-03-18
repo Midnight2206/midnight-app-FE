@@ -12,6 +12,7 @@ import {
 import { ACCESS_RULES } from "@/features/auth/authorization";
 import { useAuthorization } from "@/features/auth/useAuthorization";
 import { getApiErrorMessage } from "@/utils/apiError";
+import DashboardPageShell from "@/layouts/components/DashboardPageShell";
 
 export default function AdminCreatePage() {
   const { can } = useAuthorization();
@@ -70,8 +71,12 @@ export default function AdminCreatePage() {
   }
 
   return (
-    <div className="flex h-full flex-col gap-4 p-6">
-      <Card className="space-y-3 p-4">
+    <DashboardPageShell
+      title="Tạo tài khoản ADMIN"
+      description="Khởi tạo tài khoản quản trị mới và gán đơn vị phụ trách ngay trong dashboard hệ thống."
+      className="space-y-4 p-4 md:p-6"
+    >
+      <Card className="space-y-3 p-4 sm:p-5">
         <h2 className="text-lg font-semibold">Tạo tài khoản ADMIN</h2>
         {isFetchingUnits && units.length === 0 && (
           <SectionLoader label="Đang tải danh sách đơn vị..." className="p-3" />
@@ -102,7 +107,7 @@ export default function AdminCreatePage() {
             autoComplete="new-password"
           />
           <select
-            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+            className="h-10 rounded-xl border border-input bg-background px-3 text-sm md:col-span-2"
             value={form.unitId}
             onChange={(e) => setForm((prev) => ({ ...prev, unitId: e.target.value }))}
             disabled={isFetchingUnits || selectableUnits.length === 0}
@@ -120,6 +125,7 @@ export default function AdminCreatePage() {
           <div className="md:col-span-2">
             <Button
               type="submit"
+              className="w-full sm:w-auto"
               disabled={
                 isCreating ||
                 isFetchingUnits ||
@@ -135,6 +141,6 @@ export default function AdminCreatePage() {
           </div>
         </form>
       </Card>
-    </div>
+    </DashboardPageShell>
   );
 }

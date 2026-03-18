@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { Toaster } from "@/components/ui/sonner";
 import { PageLoader } from "@/components/AppLoading";
 
@@ -16,6 +17,7 @@ import NotFound from "@/pages/NotFound";
 import {
   ACCESS_RULES,
   PERMISSION_PREFIXES,
+  canAccessByRule,
 } from "@/features/auth/authorization";
 
 const Category = lazy(() => import("@/pages/Category"));
@@ -28,6 +30,32 @@ const SizeRegistrationPage = lazy(() => import("@/pages/SizeRegistration"));
 const BackupRecoveryPage = lazy(() => import("@/pages/BackupRecovery"));
 const InventoryPage = lazy(() => import("@/pages/Inventory"));
 const VerifyEmailPage = lazy(() => import("@/pages/VerifyEmail"));
+const VerifyPasswordChangePage = lazy(() => import("@/pages/VerifyPasswordChange"));
+const SettingsPage = lazy(() => import("@/pages/Settings"));
+const ProfilePage = lazy(() => import("@/pages/Profile"));
+
+function DashboardLandingRedirect() {
+  const user = useSelector((state) => state.auth.user);
+
+  if (
+    canAccessByRule(user, {
+      ...ACCESS_RULES.accountDashboardPage,
+      anyPermissionPrefixes: [PERMISSION_PREFIXES.ACCOUNTS],
+    })
+  ) {
+    return <Navigate to="/dashboard/accounts/create" replace />;
+  }
+
+  if (canAccessByRule(user, ACCESS_RULES.accessControlPage)) {
+    return <Navigate to="/dashboard/access" replace />;
+  }
+
+  if (canAccessByRule(user, ACCESS_RULES.backupRecoveryPage)) {
+    return <Navigate to="/dashboard/backups" replace />;
+  }
+
+  return <Navigate to="/" replace />;
+}
 
 function RouteFallback() {
   return (
@@ -107,11 +135,15 @@ export default function AppRouter() {
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
             <Route path="/verify-email" element={<VerifyEmailPage />} />
+            <Route path="/verify-password-change" element={<VerifyPasswordChangePage />} />
           </Route>
 
           <Route element={<ProtectedRoute />}>
             <Route element={<MainLayout />}>
               <Route path="/posts" element={<Post />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/dashboard" element={<DashboardLandingRedirect />} />
 
               {guardedFeatureRoutes.map((route) => (
                 <Route

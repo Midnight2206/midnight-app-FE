@@ -24,6 +24,7 @@ import { ACCESS_RULES } from "@/features/auth/authorization";
 import { useAuthorization } from "@/features/auth/useAuthorization";
 import { getPaginationMeta } from "@/utils/pagination";
 import { getApiErrorMessage } from "@/utils/apiError";
+import DashboardPageShell from "@/layouts/components/DashboardPageShell";
 
 export default function AccountManagementPage() {
   const { can } = useAuthorization();
@@ -119,9 +120,13 @@ export default function AccountManagementPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <DashboardPageShell
+      title="Quản lý tài khoản hệ thống"
+      description="Theo dõi tài khoản, khóa mở, reset mật khẩu và kiểm tra trạng thái claim trên cùng một màn hình."
+      className="space-y-4 p-4 md:p-6"
+    >
       <Dialog open={resetModal.open} onOpenChange={(open) => !open && closeResetModal()}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Reset mật khẩu tài khoản</DialogTitle>
             <DialogDescription>
@@ -134,23 +139,27 @@ export default function AccountManagementPage() {
             value={resetModal.newPassword}
             onChange={(e) => setResetModal((prev) => ({ ...prev, newPassword: e.target.value }))}
           />
-          <DialogFooter>
-            <Button variant="outline" onClick={closeResetModal}>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" className="w-full sm:w-auto" onClick={closeResetModal}>
               Hủy
             </Button>
-            <Button onClick={handleConfirmResetPassword} disabled={isResettingPassword}>
+            <Button
+              className="w-full sm:w-auto"
+              onClick={handleConfirmResetPassword}
+              disabled={isResettingPassword}
+            >
               {isResettingPassword ? "Đang xử lý..." : "Xác nhận reset"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      <Card className="surface relative p-4 md:p-5 space-y-3">
+      <Card className="surface relative space-y-3 p-4 md:p-5">
         <OverlayLoader show={isFetching && !isLoading} label="Đang cập nhật danh sách tài khoản..." />
-        <div className="data-toolbar">
-          <h2 className="text-lg font-semibold">Quản lý tài khoản hệ thống</h2>
+        <div className="data-toolbar flex-col items-stretch sm:flex-row sm:items-center">
+          <h2 className="text-lg font-semibold sm:mr-auto">Quản lý tài khoản hệ thống</h2>
           <Input
-            className="w-full md:max-w-xs"
+            className="w-full sm:max-w-xs"
             placeholder="Tìm email hoặc username..."
             value={search}
             onChange={(e) => {
@@ -159,6 +168,7 @@ export default function AccountManagementPage() {
             }}
           />
           <select
+            className="w-full sm:w-auto"
             value={limit}
             onChange={(e) => {
               setLimit(Number(e.target.value));
@@ -170,6 +180,7 @@ export default function AccountManagementPage() {
             <option value={50}>50 / trang</option>
           </select>
           <select
+            className="w-full sm:w-auto"
             value={claimStatus}
             onChange={(e) => {
               setClaimStatus(e.target.value);
@@ -180,7 +191,7 @@ export default function AccountManagementPage() {
             <option value="claimed">Đã claim</option>
             <option value="unclaimed">Chưa claim</option>
           </select>
-          <Button variant="outline" onClick={() => refetch()} disabled={isFetching}>
+          <Button className="w-full sm:w-auto" variant="outline" onClick={() => refetch()} disabled={isFetching}>
             Làm mới
           </Button>
         </div>
@@ -193,7 +204,7 @@ export default function AccountManagementPage() {
           </Card>
         ) : (
           <>
-            <div className="data-table-wrap">
+            <div className="data-table-wrap -mx-4 sm:mx-0">
               <table className="data-table min-w-[1100px]">
                 <thead>
                   <tr>
@@ -278,6 +289,6 @@ export default function AccountManagementPage() {
           </>
         )}
       </Card>
-    </div>
+    </DashboardPageShell>
   );
 }

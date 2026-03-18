@@ -8,6 +8,61 @@ export const authApi = baseApi.injectEndpoints({
         method: "get",
       }),
       transformResponse: (response) => response,
+      providesTags: ["User"],
+    }),
+
+    getMyProfile: builder.query({
+      query: () => ({
+        url: "/auth/profile",
+        method: "get",
+      }),
+      transformResponse: (response) => response,
+      providesTags: ["User"],
+    }),
+
+    updateMyProfile: builder.mutation({
+      query: (data) => ({
+        url: "/auth/profile",
+        method: "patch",
+        data,
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    getMySessions: builder.query({
+      query: () => ({
+        url: "/auth/sessions",
+        method: "get",
+      }),
+      transformResponse: (response) => response,
+      providesTags: ["User"],
+    }),
+
+    getPasswordChangeStatus: builder.query({
+      query: () => ({
+        url: "/auth/password-change/status",
+        method: "get",
+      }),
+      transformResponse: (response) => response,
+      providesTags: ["User"],
+    }),
+
+    requestPasswordChange: builder.mutation({
+      query: (data) => ({
+        url: "/auth/password-change/request",
+        method: "post",
+        data,
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    confirmPasswordChange: builder.mutation({
+      query: ({ token }) => ({
+        url: "/auth/password-change/confirm",
+        method: "post",
+        data: { token },
+        skipRefresh: true,
+      }),
     }),
 
     register: builder.mutation({
@@ -55,6 +110,12 @@ export const authApi = baseApi.injectEndpoints({
 
 export const {
   useGetCurrentUserQuery,
+  useGetMyProfileQuery,
+  useUpdateMyProfileMutation,
+  useGetMySessionsQuery,
+  useGetPasswordChangeStatusQuery,
+  useRequestPasswordChangeMutation,
+  useConfirmPasswordChangeMutation,
   useLazyGetCurrentUserQuery,
   useRegisterMutation,
   useLoginMutation,

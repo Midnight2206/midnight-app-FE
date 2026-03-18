@@ -28,7 +28,7 @@ export const userQuickActions = [
     icon: <User className="h-4 w-4" />,
     title: "Thông tin tài khoản",
     desc: "Quản lý hồ sơ và phiên đăng nhập",
-    to: "/",
+    to: "/profile",
   },
 ];
 
@@ -46,8 +46,14 @@ export const privilegedQuickActions = [
     icon: <Settings className="h-4 w-4" />,
     title: "Phân hệ hệ thống",
     desc: "Quản lý tài khoản, phân quyền và cấu hình",
-    to: "/dashboard/accounts/create",
-    accessRule: ACCESS_RULES.accountDashboardPage,
+    to: "/dashboard",
+    accessRule: {
+      anyPermissionPrefixes: [
+        ACCESS_RULES.accountDashboardPage.anyPermissionPrefixes[0],
+        ACCESS_RULES.accessControlPage.anyPermissionPrefixes[0],
+        ACCESS_RULES.backupRecoveryPage.anyPermissionPrefixes[0],
+      ],
+    },
   },
   {
     key: "category-management",

@@ -18,7 +18,7 @@ export default function CreateRoleCard({ newRole, setNewRole, onSubmit, isCreati
           onChange={(e) => setNewRole((prev) => ({ ...prev, description: e.target.value }))}
         />
         <div className="md:col-span-2">
-          <Button type="submit" disabled={isCreatingRole}>
+          <Button className="w-full sm:w-auto" type="submit" disabled={isCreatingRole}>
             {isCreatingRole ? "Đang tạo..." : "Tạo role"}
           </Button>
         </div>
@@ -26,4 +26,3 @@ export default function CreateRoleCard({ newRole, setNewRole, onSubmit, isCreati
     </Card>
   );
 }
-

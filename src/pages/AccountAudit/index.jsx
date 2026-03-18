@@ -9,6 +9,7 @@ import { useGetAccountAuditsQuery } from "@/features/account/accountApi";
 import { ACCESS_RULES } from "@/features/auth/authorization";
 import { useAuthorization } from "@/features/auth/useAuthorization";
 import { getPaginationMeta } from "@/utils/pagination";
+import DashboardPageShell from "@/layouts/components/DashboardPageShell";
 
 export default function AccountAuditPage() {
   const { can } = useAuthorization();
@@ -36,12 +37,17 @@ export default function AccountAuditPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <Card className="surface relative p-4 md:p-5 space-y-3">
+    <DashboardPageShell
+      title="Audit log tài khoản"
+      description="Theo dõi lịch sử thao tác hệ thống và biến động trên các tài khoản quản trị."
+      className="space-y-4 p-4 md:p-6"
+    >
+      <Card className="surface relative space-y-3 p-4 md:p-5">
         <OverlayLoader show={isFetching && !isLoading} label="Đang cập nhật audit log..." />
-        <div className="data-toolbar">
-          <h2 className="text-lg font-semibold">Audit log tài khoản</h2>
+        <div className="data-toolbar flex-col items-stretch sm:flex-row sm:items-center">
+          <h2 className="text-lg font-semibold sm:mr-auto">Audit log tài khoản</h2>
           <select
+            className="w-full sm:w-auto"
             value={limit}
             onChange={(e) => {
               setLimit(Number(e.target.value));
@@ -52,7 +58,7 @@ export default function AccountAuditPage() {
             <option value={20}>20 / trang</option>
             <option value={50}>50 / trang</option>
           </select>
-          <Button variant="outline" onClick={() => refetch()} disabled={isFetching}>
+          <Button className="w-full sm:w-auto" variant="outline" onClick={() => refetch()} disabled={isFetching}>
             Làm mới log
           </Button>
         </div>
@@ -61,7 +67,7 @@ export default function AccountAuditPage() {
           <TableSkeleton rows={8} cols={5} />
         ) : (
           <>
-            <div className="data-table-wrap">
+            <div className="data-table-wrap -mx-4 sm:mx-0">
               <table className="data-table min-w-[920px]">
                 <thead>
                   <tr>
@@ -112,6 +118,6 @@ export default function AccountAuditPage() {
           </>
         )}
       </Card>
-    </div>
+    </DashboardPageShell>
   );
 }

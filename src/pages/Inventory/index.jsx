@@ -122,11 +122,17 @@ function TransferStockModal({
             disabled={isSubmitting}
           />
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
+          <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
+              disabled={isSubmitting}
+              className="w-full sm:w-auto"
+            >
               Huỷ
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
               Xác nhận chuyển
             </Button>
           </DialogFooter>
@@ -185,11 +191,17 @@ function AdjustStockModal({
             disabled={isSubmitting}
           />
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
+          <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
+              disabled={isSubmitting}
+              className="w-full sm:w-auto"
+            >
               Huỷ
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
               Xác nhận
             </Button>
           </DialogFooter>
@@ -333,13 +345,14 @@ export default function InventoryPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-4 sm:p-6">
       <Card className="p-4 space-y-4">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <h2 className="font-semibold">Kho quân trang theo đơn vị</h2>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
             <Button
               type="button"
+              className="w-full sm:w-auto"
               onClick={() => {
                 setEditingWarehouse(null);
                 setModalOpen(true);
@@ -350,6 +363,7 @@ export default function InventoryPage() {
             <Button
               type="button"
               variant="outline"
+              className="w-full sm:w-auto"
               disabled={!currentWarehouse}
               onClick={() => {
                 if (!currentWarehouse) return;
@@ -428,13 +442,13 @@ export default function InventoryPage() {
       </Card>
 
       <Card className="p-4 space-y-4">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <h3 className="font-semibold">Tồn kho theo mặt hàng</h3>
           <Input
             value={searchKeyword}
             onChange={(event) => setSearchKeyword(event.target.value)}
             placeholder="Tìm theo tên, phiên bản, cỡ số..."
-            className="max-w-xs"
+            className="w-full max-w-none sm:max-w-xs"
             disabled={!currentWarehouseId}
           />
         </div>
@@ -462,11 +476,12 @@ export default function InventoryPage() {
                     <td className="py-2 px-3">{item.category.name}</td>
                     <td className="py-2 px-3">{item.quantity ?? 0}</td>
                     <td className="py-2 px-3">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                         <Button
                           type="button"
                           size="sm"
                           variant="outline"
+                          className="w-full sm:w-auto"
                           onClick={() => {
                             setTransferItem(item);
                             setTransferModalOpen(true);
@@ -479,6 +494,7 @@ export default function InventoryPage() {
                           type="button"
                           size="sm"
                           variant="outline"
+                          className="w-full sm:w-auto"
                           onClick={() => {
                             setAdjustItem(item);
                             setAdjustModalOpen(true);

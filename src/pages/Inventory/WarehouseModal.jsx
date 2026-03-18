@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 
+const EMPTY_CATEGORIES = [];
+
 function normalizeCategoryIds(rawIds = []) {
   return [
     ...new Set(
@@ -26,12 +28,12 @@ export default function WarehouseModal({
   onOpenChange,
   onSubmit,
   initialData,
-  categories = [],
+  categories = EMPTY_CATEGORIES,
   isSubmitting = false,
 }) {
   const isEdit = Boolean(initialData?.id);
   const [name, setName] = useState(initialData?.name || "");
-  const [selectedCategoryIds, setSelectedCategoryIds] = useState(
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState(() =>
     normalizeCategoryIds(initialData?.linkedCategoryIds || []),
   );
 
@@ -99,11 +101,17 @@ export default function WarehouseModal({
             </div>
           </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
+          <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
+              disabled={isSubmitting}
+              className="w-full sm:w-auto"
+            >
               Huỷ
             </Button>
-            <Button type="submit" disabled={isSubmitting || !name.trim()}>
+            <Button type="submit" disabled={isSubmitting || !name.trim()} className="w-full sm:w-auto">
               {isEdit ? "Cập nhật" : "Tạo kho"}
             </Button>
           </DialogFooter>

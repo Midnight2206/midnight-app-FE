@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import {
   Settings,
   LogOut,
-  User,
   LogIn,
   UserPlus,
   X,
@@ -15,6 +14,12 @@ import { canAccessByRule } from "@/features/auth/authorization";
 import { getRememberedMilitaryPath } from "@/features/military/navigation";
 import { sidebarNavItems } from "@/layouts/components/sidebarNav.config";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+
+function getUserInitials(user) {
+  const source = user?.username || user?.email || "U";
+  return String(source).slice(0, 2).toUpperCase();
+}
 
 function getVisibleNavItems(user) {
   return sidebarNavItems.filter((item) => {
@@ -45,7 +50,7 @@ function SidebarBody({ onClose }) {
   };
 
   return (
-    <>
+    <div className="flex h-full min-h-0 flex-col">
       <div className="mb-4 rounded-2xl border border-border/70 bg-background/70 p-4">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Logistics Control
@@ -87,16 +92,25 @@ function SidebarBody({ onClose }) {
         {isAuthenticated && user ? (
           <>
             <NavLink
-              to="/"
+              to="/profile"
               onClick={onClose}
-              className="flex items-center gap-2 rounded-xl px-3 py-2 hover:bg-accent"
+              className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-accent"
             >
-              <User className="h-4 w-4" />
-              {user.username}
+              <Avatar className="h-9 w-9 rounded-xl border border-border/70">
+                <AvatarFallback className="rounded-xl text-xs font-semibold">
+                  {getUserInitials(user)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{user.username}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {user.unit?.name || user.email}
+                </p>
+              </div>
             </NavLink>
 
             <NavLink
-              to="/categories"
+              to="/settings"
               onClick={onClose}
               className="mt-1 flex items-center gap-2 rounded-xl px-3 py-2 hover:bg-accent"
             >
@@ -134,21 +148,26 @@ function SidebarBody({ onClose }) {
           </>
         )}
       </div>
-    </>
+    </div>
   );
 }
 
 export default function Sidebar({ mobileOpen = false, onClose = () => {} }) {
   return (
     <>
-      <aside className="hidden w-72 min-h-screen flex-col border-r border-border/70 bg-sidebar/85 p-4 backdrop-blur md:flex">
+      <aside className="hidden h-dvh w-68 shrink-0 overflow-y-auto border-r border-border/70 bg-sidebar/85 p-4 backdrop-blur md:flex lg:w-72">
         <SidebarBody />
       </aside>
 
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
-          <div className="absolute inset-0 bg-black/45" onClick={onClose} />
-          <aside className="absolute inset-y-0 left-0 flex w-72 flex-col border-r border-border/70 bg-sidebar p-4 shadow-2xl">
+          <button
+            type="button"
+            aria-label="Đóng menu điều hướng"
+            className="absolute inset-0 bg-black/45"
+            onClick={onClose}
+          />
+          <aside className="absolute inset-y-0 left-0 flex h-full w-[min(20rem,calc(100vw-1rem))] flex-col overflow-y-auto rounded-r-3xl border-r border-border/70 bg-sidebar p-4 shadow-2xl">
             <div className="mb-2 flex justify-end">
               <Button variant="outline" size="icon-sm" onClick={onClose}>
                 <X className="h-4 w-4" />
