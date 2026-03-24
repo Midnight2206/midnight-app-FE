@@ -22,14 +22,25 @@ import {
   useUpdateMyProfileMutation,
 } from "@/features/auth/authApi";
 import { getApiErrorMessage } from "@/utils/apiError";
+import { DISPLAY_LABELS } from "@/utils/constants";
 import PasswordInput from "@/components/PasswordInput";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { PageLoader, SectionLoader, LoadingButtonLabel } from "@/components/AppLoading";
+import {
+  PageLoader,
+  SectionLoader,
+  LoadingButtonLabel,
+} from "@/components/AppLoading";
 
 function getInitials(profile, user) {
   const source = profile?.fullName || user?.username || user?.email || "U";
@@ -83,18 +94,24 @@ function getPendingMeta(status) {
 
 export default function ProfilePage() {
   const user = useSelector((state) => state.auth.user);
-  const { data: profileResponse, isLoading: isProfileLoading } = useGetMyProfileQuery();
-  const { data: sessionsResponse, isLoading: isSessionsLoading } = useGetMySessionsQuery();
+  const { data: profileResponse, isLoading: isProfileLoading } =
+    useGetMyProfileQuery();
+  const { data: sessionsResponse, isLoading: isSessionsLoading } =
+    useGetMySessionsQuery();
   const { data: passwordStatusResponse } = useGetPasswordChangeStatusQuery();
-  const [updateMyProfile, { isLoading: isSavingProfile }] = useUpdateMyProfileMutation();
-  const [cancelPasswordChangeRequest, { isLoading: isCancellingPasswordChange }] =
-    useCancelPasswordChangeRequestMutation();
+  const [updateMyProfile, { isLoading: isSavingProfile }] =
+    useUpdateMyProfileMutation();
+  const [
+    cancelPasswordChangeRequest,
+    { isLoading: isCancellingPasswordChange },
+  ] = useCancelPasswordChangeRequestMutation();
   const [requestPasswordChange, { isLoading: isRequestingPasswordChange }] =
     useRequestPasswordChangeMutation();
 
   const profileData = profileResponse?.data || null;
   const sessions = sessionsResponse?.data?.sessions || [];
-  const passwordStatus = passwordStatusResponse?.data || profileData?.passwordChangeRequest || {};
+  const passwordStatus =
+    passwordStatusResponse?.data || profileData?.passwordChangeRequest || {};
   const pendingMeta = getPendingMeta(passwordStatus);
 
   const profileForm = useForm({
@@ -149,7 +166,9 @@ export default function ProfilePage() {
       toast.success("Đã gửi email xác minh đổi mật khẩu.");
       passwordForm.reset();
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Không thể gửi yêu cầu đổi mật khẩu."));
+      toast.error(
+        getApiErrorMessage(error, "Không thể gửi yêu cầu đổi mật khẩu."),
+      );
     }
   });
 
@@ -158,7 +177,9 @@ export default function ProfilePage() {
       await cancelPasswordChangeRequest().unwrap();
       toast.success("Đã hủy yêu cầu đổi mật khẩu.");
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Không thể hủy yêu cầu đổi mật khẩu."));
+      toast.error(
+        getApiErrorMessage(error, "Không thể hủy yêu cầu đổi mật khẩu."),
+      );
     }
   };
 
@@ -179,7 +200,10 @@ export default function ProfilePage() {
       <Card className="surface p-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
           <Avatar className="h-20 w-20 rounded-3xl border border-border/70">
-            <AvatarImage src={profileData?.profile?.avatar || ""} alt={effectiveUser?.username || "user"} />
+            <AvatarImage
+              src={profileData?.profile?.avatar || ""}
+              alt={effectiveUser?.username || "user"}
+            />
             <AvatarFallback className="rounded-3xl text-lg font-semibold">
               {getInitials(profileData?.profile, effectiveUser)}
             </AvatarFallback>
@@ -191,10 +215,13 @@ export default function ProfilePage() {
               Hồ sơ cá nhân
             </div>
             <h1 className="mt-3 truncate text-xl font-semibold">
-              {profileData?.profile?.fullName || effectiveUser?.username || "Tài khoản người dùng"}
+              {profileData?.profile?.fullName ||
+                effectiveUser?.username ||
+                "Tài khoản người dùng"}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Quản lý thông tin cá nhân, xem lịch sử đăng nhập và bảo vệ tài khoản của bạn.
+              Quản lý thông tin cá nhân, xem lịch sử đăng nhập và bảo vệ tài
+              khoản của bạn.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               {roleLabels.map((role) => (
@@ -206,7 +233,9 @@ export default function ProfilePage() {
                 variant={effectiveUser?.verifiedAt ? "default" : "outline"}
                 className="max-w-full"
               >
-                {effectiveUser?.verifiedAt ? "Email đã xác minh" : "Email chưa xác minh"}
+                {effectiveUser?.verifiedAt
+                  ? "Email đã xác minh"
+                  : "Email chưa xác minh"}
               </Badge>
             </div>
           </div>
@@ -218,7 +247,8 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle>Thông tin hồ sơ</CardTitle>
             <CardDescription>
-              Cập nhật các trường trong bảng profile để đồng bộ hồ sơ hiển thị trên toàn hệ thống.
+              Cập nhật các trường trong bảng profile để đồng bộ hồ sơ hiển thị
+              trên toàn hệ thống.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -246,17 +276,28 @@ export default function ProfilePage() {
                 <Label htmlFor="phone">Số điện thoại</Label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input id="phone" className="pl-10" placeholder="0987..." {...profileForm.register("phone")} />
+                  <Input
+                    id="phone"
+                    className="pl-10"
+                    placeholder="0987..."
+                    {...profileForm.register("phone")}
+                  />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="birthday">Ngày sinh</Label>
-                <Input id="birthday" type="date" {...profileForm.register("birthday")} />
+                <Input
+                  id="birthday"
+                  type="date"
+                  {...profileForm.register("birthday")}
+                />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="initialCommissioningYear">Năm phong/CCĐ lần đầu</Label>
+                <Label htmlFor="initialCommissioningYear">
+                  Năm phong/CCĐ lần đầu
+                </Label>
                 <Input
                   id="initialCommissioningYear"
                   type="number"
@@ -267,7 +308,9 @@ export default function ProfilePage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="assignedUnit">Assigned unit hiển thị</Label>
+                <Label htmlFor="assignedUnit">
+                  {DISPLAY_LABELS.assignedUnitTitle} hiển thị
+                </Label>
                 <Input
                   id="assignedUnit"
                   placeholder="Đại đội 1"
@@ -277,7 +320,11 @@ export default function ProfilePage() {
               </div>
 
               <div className="md:col-span-2 flex justify-end">
-                <Button type="submit" disabled={isSavingProfile} className="w-full sm:w-auto">
+                <Button
+                  type="submit"
+                  disabled={isSavingProfile}
+                  className="w-full sm:w-auto"
+                >
                   <LoadingButtonLabel
                     loading={isSavingProfile}
                     loadingText="Đang cập nhật..."
@@ -299,24 +346,34 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="grid gap-3">
               <div className="rounded-2xl border border-border/70 bg-background/60 p-4">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Username</p>
-                <p className="mt-1 text-sm font-medium">{effectiveUser?.username || "-"}</p>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  {DISPLAY_LABELS.username}
+                </p>
+                <p className="mt-1 text-sm font-medium">
+                  {effectiveUser?.username || "-"}
+                </p>
               </div>
               <div className="rounded-2xl border border-border/70 bg-background/60 p-4">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Email đăng nhập</p>
-                  <p className="mt-1 flex items-start gap-2 text-sm font-medium break-all">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    {effectiveUser?.email || "-"}
-                  </p>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Email đăng nhập
+                </p>
+                <p className="mt-1 flex items-start gap-2 text-sm font-medium break-all">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  {effectiveUser?.email || "-"}
+                </p>
               </div>
               <div className="rounded-2xl border border-border/70 bg-background/60 p-4">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Đơn vị</p>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Đơn vị
+                </p>
                 <p className="mt-1 text-sm font-medium">
                   {effectiveUser?.unit?.name || "Chưa gán đơn vị"}
                 </p>
               </div>
               <div className="rounded-2xl border border-border/70 bg-background/60 p-4">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Xác minh email</p>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Xác minh email
+                </p>
                 <p className="mt-1 inline-flex items-center gap-2 text-sm font-medium">
                   <BadgeCheck className="h-4 w-4 text-muted-foreground" />
                   {effectiveUser?.verifiedAt
@@ -353,8 +410,8 @@ export default function ProfilePage() {
                   error={passwordForm.formState.errors.confirmPassword}
                 />
                 <div className="rounded-2xl border border-dashed border-border/70 bg-background/40 p-3 text-sm text-muted-foreground">
-                  Email xác minh đổi mật khẩu có hiệu lực trong 2 giờ. Khi xác minh thành công,
-                  toàn bộ thiết bị khác sẽ bị đăng xuất.
+                  Email xác minh đổi mật khẩu có hiệu lực trong 2 giờ. Khi xác
+                  minh thành công, toàn bộ thiết bị khác sẽ bị đăng xuất.
                 </div>
                 <Button
                   type="submit"
@@ -390,8 +447,8 @@ export default function ProfilePage() {
             <CardHeader>
               <CardTitle>Thông tin đăng nhập</CardTitle>
               <CardDescription>
-                Danh sách các thiết bị còn phiên đăng nhập hoạt động. IP được lấy từ kết nối thật
-                của client phía trước Cloudflare.
+                Danh sách các thiết bị còn phiên đăng nhập hoạt động. IP được
+                lấy từ kết nối thật của client phía trước Cloudflare.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -408,14 +465,18 @@ export default function ProfilePage() {
                   </div>
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
                     <div>
-                      <p className="text-xs uppercase tracking-wide text-muted-foreground">IP</p>
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        IP
+                      </p>
                       <p className="mt-1 flex items-start gap-2 text-sm font-medium break-all">
                         <Globe className="h-4 w-4 text-muted-foreground" />
                         {currentSession.ip || "Không xác định"}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs uppercase tracking-wide text-muted-foreground">Đăng nhập lúc</p>
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        Đăng nhập lúc
+                      </p>
                       <p className="mt-1 inline-flex items-center gap-2 text-sm font-medium">
                         <CalendarDays className="h-4 w-4 text-muted-foreground" />
                         {formatDateTime(currentSession.createdAt)}
@@ -424,7 +485,10 @@ export default function ProfilePage() {
                   </div>
                 </div>
               ) : isSessionsLoading ? (
-                <SectionLoader label="Đang tải thông tin phiên đăng nhập..." className="p-4" />
+                <SectionLoader
+                  label="Đang tải thông tin phiên đăng nhập..."
+                  className="p-4"
+                />
               ) : (
                 <div className="rounded-2xl border border-dashed border-border/70 bg-background/30 p-4 text-sm text-muted-foreground">
                   Chưa có phiên đăng nhập hoạt động nào được ghi nhận.
@@ -446,7 +510,8 @@ export default function ProfilePage() {
                           </span>
                         </p>
                         <p className="mt-1 text-xs text-muted-foreground">
-                          {session.ip || "Không xác định IP"} • Hết hạn {formatDateTime(session.expiresAt)}
+                          {session.ip || "Không xác định IP"} • Hết hạn{" "}
+                          {formatDateTime(session.expiresAt)}
                         </p>
                       </div>
                       {session.isCurrent ? (
@@ -464,11 +529,17 @@ export default function ProfilePage() {
           <Card className="surface">
             <CardHeader>
               <CardTitle>Quyền tài khoản</CardTitle>
-              <CardDescription>Nhóm vai trò hiện được gán cho tài khoản của bạn.</CardDescription>
+              <CardDescription>
+                Nhóm vai trò hiện được gán cho tài khoản của bạn.
+              </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-2">
               {roleLabels.map((role) => (
-                <Badge key={role} variant="outline" className="inline-flex items-center gap-1.5">
+                <Badge
+                  key={role}
+                  variant="outline"
+                  className="inline-flex items-center gap-1.5"
+                >
                   <ShieldCheck className="h-3.5 w-3.5" />
                   {role}
                 </Badge>

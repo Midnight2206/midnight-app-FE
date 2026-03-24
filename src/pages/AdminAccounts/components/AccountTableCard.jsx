@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { getApiErrorMessage } from "@/utils/apiError";
+import { DISPLAY_LABELS } from "@/utils/constants";
 
 export default function AccountTableCard({
   isFetching,
@@ -23,12 +24,15 @@ export default function AccountTableCard({
 }) {
   return (
     <Card className="relative space-y-3 p-4">
-      <OverlayLoader show={isFetching && !isLoading} label="Đang cập nhật danh sách tài khoản..." />
+      <OverlayLoader
+        show={isFetching && !isLoading}
+        label="Đang cập nhật danh sách tài khoản..."
+      />
       <div className="flex flex-wrap items-center gap-3">
         <h2 className="text-lg font-semibold">Quản lý tài khoản hệ thống</h2>
         <Input
           className="max-w-xs"
-          placeholder="Tìm email hoặc username..."
+          placeholder={`Tìm email hoặc ${DISPLAY_LABELS.username.toLowerCase()}...`}
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -56,7 +60,10 @@ export default function AccountTableCard({
         <TableSkeleton rows={8} cols={6} />
       ) : error ? (
         <SectionLoader
-          label={getApiErrorMessage(error, "Không tải được danh sách tài khoản.")}
+          label={getApiErrorMessage(
+            error,
+            "Không tải được danh sách tài khoản.",
+          )}
           textClassName="text-destructive"
         />
       ) : (
@@ -65,10 +72,14 @@ export default function AccountTableCard({
             <table className="w-full min-w-[900px] text-sm">
               <thead className="bg-muted/50">
                 <tr>
-                  <th className="px-3 py-2 text-left">Username</th>
+                  <th className="px-3 py-2 text-left">
+                    {DISPLAY_LABELS.username}
+                  </th>
                   <th className="px-3 py-2 text-left">Email</th>
-                  <th className="px-3 py-2 text-left">Roles</th>
-                  <th className="px-3 py-2 text-left">Unit</th>
+                  <th className="px-3 py-2 text-left">
+                    {DISPLAY_LABELS.roles}
+                  </th>
+                  <th className="px-3 py-2 text-left">{DISPLAY_LABELS.unit}</th>
                   <th className="px-3 py-2 text-left">Trạng thái</th>
                   <th className="px-3 py-2 text-left">Hành động</th>
                 </tr>
@@ -76,7 +87,10 @@ export default function AccountTableCard({
               <tbody>
                 {accounts.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-3 py-6 text-center text-muted-foreground">
+                    <td
+                      colSpan={6}
+                      className="px-3 py-6 text-center text-muted-foreground"
+                    >
                       Không có tài khoản.
                     </td>
                   </tr>
@@ -85,16 +99,22 @@ export default function AccountTableCard({
                     <tr key={account.id} className="border-t">
                       <td className="px-3 py-2">{account.username}</td>
                       <td className="px-3 py-2">{account.email}</td>
-                      <td className="px-3 py-2">{(account.roles || []).join(", ")}</td>
+                      <td className="px-3 py-2">
+                        {(account.roles || []).join(", ")}
+                      </td>
                       <td className="px-3 py-2">
                         {account.unit?.id} - {account.unit?.name}
                       </td>
-                      <td className="px-3 py-2">{account.isActive ? "Hoạt động" : "Đã khóa"}</td>
+                      <td className="px-3 py-2">
+                        {account.isActive ? "Hoạt động" : "Đã khóa"}
+                      </td>
                       <td className="px-3 py-2">
                         <div className="flex gap-2">
                           <Button
                             size="sm"
-                            variant={account.isActive ? "destructive" : "default"}
+                            variant={
+                              account.isActive ? "destructive" : "default"
+                            }
                             disabled={
                               isUpdatingStatus ||
                               isFetching ||
@@ -107,7 +127,9 @@ export default function AccountTableCard({
                           <Button
                             size="sm"
                             variant="outline"
-                            disabled={(account.roles || []).includes("SUPER_ADMIN")}
+                            disabled={(account.roles || []).includes(
+                              "SUPER_ADMIN",
+                            )}
                             onClick={() => onOpenResetModal(account)}
                           >
                             Reset mật khẩu
@@ -123,8 +145,8 @@ export default function AccountTableCard({
 
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">
-              Trang {accountPagination.page}/{accountPagination.totalPages} - Tổng{" "}
-              {accountPagination.total} tài khoản
+              Trang {accountPagination.page}/{accountPagination.totalPages} -
+              Tổng {accountPagination.total} tài khoản
             </p>
             <div className="flex gap-2">
               <Button
@@ -138,9 +160,13 @@ export default function AccountTableCard({
               <Button
                 variant="outline"
                 size="sm"
-                disabled={accountPagination.page >= accountPagination.totalPages}
+                disabled={
+                  accountPagination.page >= accountPagination.totalPages
+                }
                 onClick={() =>
-                  setPage((prev) => Math.min(accountPagination.totalPages, prev + 1))
+                  setPage((prev) =>
+                    Math.min(accountPagination.totalPages, prev + 1),
+                  )
                 }
               >
                 Sau
@@ -152,4 +178,3 @@ export default function AccountTableCard({
     </Card>
   );
 }
-

@@ -1,6 +1,7 @@
 import { toast } from "sonner";
 
 import { getApiErrorMessage } from "@/utils/apiError";
+import { DISPLAY_LABELS } from "@/utils/constants";
 
 export function useMilitaryActions({
   confirm,
@@ -163,7 +164,9 @@ export function useMilitaryActions({
           `Import hoàn tất: ${importedRows} dòng thành công, ${skippedRows} dòng bị bỏ qua do xung đột.`,
         );
       } else {
-        toast.success(`Import danh sách quân nhân thành công (${importedRows} dòng).`);
+        toast.success(
+          `Import danh sách quân nhân thành công (${importedRows} dòng).`,
+        );
       }
       setImportFile(null);
       await refetch();
@@ -205,7 +208,9 @@ export function useMilitaryActions({
       window.URL.revokeObjectURL(url);
       toast.success("Đã tạo và tải template đăng ký cỡ số.");
     } catch (err) {
-      toast.error(getApiErrorMessage(err, "Tạo template đăng ký cỡ số thất bại."));
+      toast.error(
+        getApiErrorMessage(err, "Tạo template đăng ký cỡ số thất bại."),
+      );
     }
   };
 
@@ -221,7 +226,9 @@ export function useMilitaryActions({
     }
     const approvalToken = registrationImportPreview?.approval?.token;
     if (!approvalToken) {
-      toast.error("Bạn cần xem trước (dry-run) trước khi import để đảm bảo an toàn.");
+      toast.error(
+        "Bạn cần xem trước (dry-run) trước khi import để đảm bảo an toàn.",
+      );
       return;
     }
 
@@ -229,7 +236,10 @@ export function useMilitaryActions({
       const formData = new FormData();
       formData.append("file", registrationImportFile);
       formData.append("categoryIds", selectedRegistrationCategoryIds.join(","));
-      formData.append("keepExisting", registrationImportKeepExisting ? "true" : "false");
+      formData.append(
+        "keepExisting",
+        registrationImportKeepExisting ? "true" : "false",
+      );
       formData.append("year", String(selectedYear));
       formData.append("approvalToken", approvalToken);
       await importMilitaryRegistrations(formData).unwrap();
@@ -258,12 +268,17 @@ export function useMilitaryActions({
       const formData = new FormData();
       formData.append("file", registrationImportFile);
       formData.append("categoryIds", selectedRegistrationCategoryIds.join(","));
-      formData.append("keepExisting", registrationImportKeepExisting ? "true" : "false");
+      formData.append(
+        "keepExisting",
+        registrationImportKeepExisting ? "true" : "false",
+      );
       formData.append("year", String(selectedYear));
       const raw = await previewMilitaryRegistrationsImport(formData).unwrap();
       const previewData = raw?.data?.data ?? raw?.data ?? raw;
       setRegistrationImportPreview(previewData || null);
-      toast.success("Đã tạo preview import. Vui lòng kiểm tra trước khi xác nhận import.");
+      toast.success(
+        "Đã tạo preview import. Vui lòng kiểm tra trước khi xác nhận import.",
+      );
     } catch (err) {
       setRegistrationImportPreview(null);
       toast.error(getApiErrorMessage(err, "Preview import thất bại."));
@@ -293,7 +308,8 @@ export function useMilitaryActions({
     if (!isSuperAdmin) return;
     const ok = await confirm({
       title: "Reset dữ liệu quân nhân",
-      description: "Bạn chắc chắn muốn reset dữ liệu quân nhân? Thao tác này không thể hoàn tác.",
+      description:
+        "Bạn chắc chắn muốn reset dữ liệu quân nhân? Thao tác này không thể hoàn tác.",
       confirmText: "Reset dữ liệu",
       cancelText: "Hủy",
       variant: "destructive",
@@ -312,7 +328,12 @@ export function useMilitaryActions({
 
   const refreshAll = async () => {
     if (canRegisterSizes) {
-      await Promise.all([refetch(), refetchRegistrationList(), refetchUnits(), refetchYears()]);
+      await Promise.all([
+        refetch(),
+        refetchRegistrationList(),
+        refetchUnits(),
+        refetchYears(),
+      ]);
       return;
     }
     await Promise.all([refetch(), refetchUnits(), refetchYears()]);
@@ -349,7 +370,9 @@ export function useMilitaryActions({
     const typeOptions = Array.isArray(military?.typeAssignments)
       ? military.typeAssignments
           .map((item) => item?.type)
-          .filter((item) => Number.isInteger(Number(item?.id)) && Number(item.id) > 0)
+          .filter(
+            (item) => Number.isInteger(Number(item?.id)) && Number(item.id) > 0,
+          )
       : [];
     const preferredTypeId = Number(
       typeOptions.find((item) => item.code === selectedType)?.id || 0,
@@ -360,7 +383,11 @@ export function useMilitaryActions({
         ? preferredTypeId
         : firstTypeId;
     setCutTransferMilitary(military);
-    setCutTransferTypeId(Number.isInteger(initialTypeId) && initialTypeId > 0 ? String(initialTypeId) : "");
+    setCutTransferTypeId(
+      Number.isInteger(initialTypeId) && initialTypeId > 0
+        ? String(initialTypeId)
+        : "",
+    );
     setCutTransferTargetUnitId(
       transferTargetUnits.length > 0 ? String(transferTargetUnits[0].id) : "",
     );
@@ -385,7 +412,11 @@ export function useMilitaryActions({
       return;
     }
 
-    if (!Number.isInteger(transferYear) || transferYear < 1900 || transferYear > 2100) {
+    if (
+      !Number.isInteger(transferYear) ||
+      transferYear < 1900 ||
+      transferYear > 2100
+    ) {
       toast.error("Năm điều chuyển không hợp lệ.");
       return;
     }
@@ -411,12 +442,17 @@ export function useMilitaryActions({
   const handleAcceptTransferRequest = async (requestId, assignedUnitId) => {
     const parsedAssignedUnitId = Number(assignedUnitId);
     if (!Number.isInteger(parsedAssignedUnitId) || parsedAssignedUnitId <= 0) {
-      toast.error("Vui lòng chọn assignedUnit tiếp nhận trước khi nhận bảo đảm.");
+      toast.error(
+        `Vui lòng chọn ${DISPLAY_LABELS.assignedUnit} tiếp nhận trước khi nhận bảo đảm.`,
+      );
       return;
     }
 
     try {
-      await acceptTransferRequest({ requestId, assignedUnitId: parsedAssignedUnitId }).unwrap();
+      await acceptTransferRequest({
+        requestId,
+        assignedUnitId: parsedAssignedUnitId,
+      }).unwrap();
       toast.success("Đã nhận bảo đảm quân trang cho quân nhân.");
       await Promise.all([refetch(), refetchIncomingTransferRequests()]);
     } catch (err) {
@@ -427,7 +463,8 @@ export function useMilitaryActions({
   const handleUndoCutTransferRequest = async (requestId) => {
     const confirmed = await confirm({
       title: "Hoàn tác cắt bảo đảm",
-      description: "Bạn có chắc muốn hoàn tác cắt bảo đảm và hủy yêu cầu điều chuyển?",
+      description:
+        "Bạn có chắc muốn hoàn tác cắt bảo đảm và hủy yêu cầu điều chuyển?",
       confirmText: "Xác nhận hoàn tác",
       cancelText: "Hủy",
       variant: "destructive",
@@ -455,12 +492,16 @@ export function useMilitaryActions({
       );
       await Promise.all([refetchYears(), refetchRegistrationList()]);
     } catch (err) {
-      toast.error(getApiErrorMessage(err, "Cập nhật trạng thái đợt đăng ký thất bại."));
+      toast.error(
+        getApiErrorMessage(err, "Cập nhật trạng thái đợt đăng ký thất bại."),
+      );
     }
   };
 
   const isSubmittingCutTransfer =
-    isCreatingCutTransferRequest || isAcceptingTransferRequest || isUndoingCutTransferRequest;
+    isCreatingCutTransferRequest ||
+    isAcceptingTransferRequest ||
+    isUndoingCutTransferRequest;
   const isSelectedYearOpen = yearStatusMap.get(selectedYear) === "OPEN";
 
   return {

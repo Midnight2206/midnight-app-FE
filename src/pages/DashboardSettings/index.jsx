@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import DashboardPageShell from "@/layouts/components/DashboardPageShell";
 import { useTheme } from "@/hooks/useTheme";
+import { DISPLAY_LABELS } from "@/utils/constants";
 
 function formatDateTime(value) {
   if (!value) return "Chưa có";
@@ -38,9 +39,12 @@ export default function DashboardSettingsPage() {
                 <MonitorCog className="h-3.5 w-3.5" />
                 Tùy chọn giao diện
               </div>
-              <h2 className="mt-3 text-lg font-semibold">Giao diện sáng / tối</h2>
+              <h2 className="mt-3 text-lg font-semibold">
+                Giao diện sáng / tối
+              </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Theme được lưu ngay trên trình duyệt của bạn để dùng lại ở các lần đăng nhập sau.
+                Theme được lưu ngay trên trình duyệt của bạn để dùng lại ở các
+                lần đăng nhập sau.
               </p>
             </div>
             <div className="rounded-2xl border border-border/70 bg-background/70 p-3">
@@ -59,7 +63,8 @@ export default function DashboardSettingsPage() {
                   Chế độ hiện tại: {isDark ? "Dark mode" : "Light mode"}
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Bật để chuyển sang giao diện tối, tắt để quay về giao diện sáng.
+                  Bật để chuyển sang giao diện tối, tắt để quay về giao diện
+                  sáng.
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -70,8 +75,14 @@ export default function DashboardSettingsPage() {
             </div>
 
             <div className="mt-4 flex flex-wrap gap-2">
-              <Button type="button" variant={isDark ? "default" : "outline"} onClick={toggleTheme}>
-                {isDark ? "Đang dùng giao diện tối" : "Chuyển sang giao diện tối"}
+              <Button
+                type="button"
+                variant={isDark ? "default" : "outline"}
+                onClick={toggleTheme}
+              >
+                {isDark
+                  ? "Đang dùng giao diện tối"
+                  : "Chuyển sang giao diện tối"}
               </Button>
               <Button type="button" variant="ghost" onClick={toggleTheme}>
                 {isDark ? "Chuyển về giao diện sáng" : "Giữ giao diện sáng"}
@@ -87,7 +98,9 @@ export default function DashboardSettingsPage() {
                 <UserRound className="h-3.5 w-3.5" />
                 Hồ sơ đăng nhập
               </div>
-              <h2 className="mt-3 text-lg font-semibold">Thông tin tài khoản</h2>
+              <h2 className="mt-3 text-lg font-semibold">
+                Thông tin tài khoản
+              </h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 Dữ liệu đang được lấy từ phiên đăng nhập hiện tại.
               </p>
@@ -96,25 +109,41 @@ export default function DashboardSettingsPage() {
 
           <div className="mt-6 grid gap-3">
             <div className="rounded-2xl border border-border/70 bg-background/60 p-4">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Username</p>
-              <p className="mt-1 text-sm font-medium">{user?.username || "-"}</p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                {DISPLAY_LABELS.username}
+              </p>
+              <p className="mt-1 text-sm font-medium">
+                {user?.username || "-"}
+              </p>
             </div>
             <div className="rounded-2xl border border-border/70 bg-background/60 p-4">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Email</p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                Email
+              </p>
               <p className="mt-1 text-sm font-medium">{user?.email || "-"}</p>
             </div>
             <div className="rounded-2xl border border-border/70 bg-background/60 p-4">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Vai trò</p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                Vai trò
+              </p>
               <p className="mt-1 text-sm font-medium">{formatRoles(user)}</p>
             </div>
             <div className="rounded-2xl border border-border/70 bg-background/60 p-4">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Đơn vị</p>
-              <p className="mt-1 text-sm font-medium">{user?.unit?.name || "Chưa gán đơn vị"}</p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                Đơn vị
+              </p>
+              <p className="mt-1 text-sm font-medium">
+                {user?.unit?.name || "Chưa gán đơn vị"}
+              </p>
             </div>
             <div className="rounded-2xl border border-border/70 bg-background/60 p-4">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Xác minh email</p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                Xác minh email
+              </p>
               <p className="mt-1 text-sm font-medium">
-                {user?.verifiedAt ? `Đã xác minh lúc ${formatDateTime(user.verifiedAt)}` : "Chưa xác minh"}
+                {user?.verifiedAt
+                  ? `Đã xác minh lúc ${formatDateTime(user.verifiedAt)}`
+                  : "Chưa xác minh"}
               </p>
             </div>
           </div>

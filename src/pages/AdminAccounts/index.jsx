@@ -15,6 +15,7 @@ import {
 import { ACCESS_RULES } from "@/features/auth/authorization";
 import { useAuthorization } from "@/features/auth/useAuthorization";
 import { getApiErrorMessage } from "@/utils/apiError";
+import { DISPLAY_LABELS } from "@/utils/constants";
 import ResetPasswordDialog from "./components/ResetPasswordDialog";
 import AccountTableCard from "./components/AccountTableCard";
 import AuditLogCard from "./components/AuditLogCard";
@@ -84,16 +85,13 @@ export default function AdminAccountsPage() {
     [auditPage, auditLimit],
   );
 
-  const {
-    data,
-    isLoading,
-    isFetching,
-    refetch,
-    error,
-  } = useGetAccountsQuery(accountQueryParams, {
-    skip: !canAccessAccountDashboard,
-    refetchOnMountOrArgChange: true,
-  });
+  const { data, isLoading, isFetching, refetch, error } = useGetAccountsQuery(
+    accountQueryParams,
+    {
+      skip: !canAccessAccountDashboard,
+      refetchOnMountOrArgChange: true,
+    },
+  );
 
   const {
     data: auditsData,
@@ -217,14 +215,19 @@ export default function AdminAccountsPage() {
 
       <Card className="space-y-3 p-4">
         <h2 className="text-lg font-semibold">Tạo tài khoản ADMIN</h2>
-        <form className="grid gap-3 md:grid-cols-2" onSubmit={handleCreateAdmin}>
+        <form
+          className="grid gap-3 md:grid-cols-2"
+          onSubmit={handleCreateAdmin}
+        >
           <Input
             placeholder="Email"
             value={form.email}
-            onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, email: e.target.value }))
+            }
           />
           <Input
-            placeholder="Username"
+            placeholder={DISPLAY_LABELS.username}
             value={form.username}
             onChange={(e) =>
               setForm((prev) => ({ ...prev, username: e.target.value }))
@@ -241,7 +244,9 @@ export default function AdminAccountsPage() {
           <select
             className="h-10 rounded-md border border-input bg-background px-3 text-sm"
             value={form.unitId}
-            onChange={(e) => setForm((prev) => ({ ...prev, unitId: e.target.value }))}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, unitId: e.target.value }))
+            }
           >
             <option value="">Chọn đơn vị</option>
             {units

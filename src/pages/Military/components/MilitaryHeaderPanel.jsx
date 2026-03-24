@@ -89,17 +89,31 @@ export default function MilitaryHeaderPanel({
             </select>
           ) : (
             <p className="text-sm text-muted-foreground">
-              Đơn vị: {adminUnit ? `${adminUnit.id} - ${adminUnit.name}` : `#${user?.unitId || "-"}`}
+              Đơn vị:{" "}
+              {adminUnit
+                ? `${adminUnit.id} - ${adminUnit.name}`
+                : `#${user?.unitId || "-"}`}
             </p>
           )}
 
-          <Button variant="outline" onClick={refreshAll} disabled={isFetching} className="gap-2">
-            <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+          <Button
+            variant="outline"
+            onClick={refreshAll}
+            disabled={isFetching}
+            className="gap-2"
+          >
+            <RefreshCw
+              className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
+            />
             Làm mới
           </Button>
 
           {isSuperAdmin && (
-            <Button variant="destructive" onClick={handleReset} disabled={isResetting}>
+            <Button
+              variant="destructive"
+              onClick={handleReset}
+              disabled={isResetting}
+            >
               {isResetting ? "Đang reset..." : "Reset dữ liệu"}
             </Button>
           )}
@@ -134,18 +148,27 @@ export default function MilitaryHeaderPanel({
             className="gap-2"
             onClick={() => setOpenListHeaderFilters((prev) => !prev)}
           >
-            {openListHeaderFilters ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+            {openListHeaderFilters ? (
+              <ArrowUp className="h-4 w-4" />
+            ) : (
+              <ArrowDown className="h-4 w-4" />
+            )}
             {openListHeaderFilters ? "Thu gọn bộ lọc" : "Mở bộ lọc"}
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">
-          Danh sách đang xem: <span className="font-medium text-foreground">{selectedTypeLabel}</span>
+          Danh sách đang xem:{" "}
+          <span className="font-medium text-foreground">
+            {selectedTypeLabel}
+          </span>
         </p>
         {openListHeaderFilters ? (
           <>
             <div className="grid gap-3 md:grid-cols-[220px_220px_minmax(0,1fr)]">
               <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Năm áp dụng (dùng chung)</p>
+                <p className="text-xs text-muted-foreground">
+                  Năm áp dụng (dùng chung)
+                </p>
                 <select
                   value={String(selectedYear)}
                   onChange={(e) => {
@@ -164,7 +187,9 @@ export default function MilitaryHeaderPanel({
                       </option>
                     ))
                   ) : (
-                    <option value={String(selectedYear)}>Năm {selectedYear}</option>
+                    <option value={String(selectedYear)}>
+                      Năm {selectedYear}
+                    </option>
                   )}
                 </select>
               </div>
@@ -183,14 +208,19 @@ export default function MilitaryHeaderPanel({
                     <option value="">Chưa có danh sách</option>
                   ) : null}
                   {militaryTypes.map((item) => (
-                    <option key={`mil-type-filter-${item.id}`} value={item.code}>
+                    <option
+                      key={`mil-type-filter-${item.id}`}
+                      value={item.code}
+                    >
                       {item.code}
                     </option>
                   ))}
                 </select>
               </div>
               <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Tìm kiếm (dùng chung)</p>
+                <p className="text-xs text-muted-foreground">
+                  Tìm kiếm (dùng chung)
+                </p>
                 <div className="relative">
                   <Input
                     value={searchInput}
@@ -223,11 +253,14 @@ export default function MilitaryHeaderPanel({
                 <p className="text-xs font-medium text-muted-foreground">
                   Quản lý danh mục loại quân nhân
                 </p>
-                <form className="flex flex-wrap items-center gap-2" onSubmit={handleCreateType}>
+                <form
+                  className="flex flex-wrap items-center gap-2"
+                  onSubmit={handleCreateType}
+                >
                   <Input
                     value={newTypeCode}
                     onChange={(e) => setNewTypeCode(e.target.value)}
-                    placeholder="Nhập mã type mới (VD: SQDB)"
+                    placeholder="Nhập mã loại mới (VD: SQDB)"
                     className="w-full md:w-64"
                   />
                   <Button type="submit" size="sm" disabled={isCreatingType}>
@@ -237,7 +270,9 @@ export default function MilitaryHeaderPanel({
                 </form>
                 <div className="flex flex-wrap gap-2">
                   {militaryTypes.length === 0 ? (
-                    <span className="text-xs text-muted-foreground">Chưa có dữ liệu loại quân nhân.</span>
+                    <span className="text-xs text-muted-foreground">
+                      Chưa có dữ liệu loại quân nhân.
+                    </span>
                   ) : (
                     militaryTypes.map((item) => (
                       <span
@@ -270,9 +305,15 @@ export default function MilitaryHeaderPanel({
                   : "Chưa có đợt đăng ký cho năm này"}
             </p>
             <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-              <span className="rounded-full border px-2 py-1">Tổng: {militariesCount}</span>
-              <span className="rounded-full border px-2 py-1">Đã claim: {claimedCount}</span>
-              <span className="rounded-full border px-2 py-1">Chưa claim: {unclaimedCount}</span>
+              <span className="rounded-full border px-2 py-1">
+                Tổng: {militariesCount}
+              </span>
+              <span className="rounded-full border px-2 py-1">
+                Đã claim: {claimedCount}
+              </span>
+              <span className="rounded-full border px-2 py-1">
+                Chưa claim: {unclaimedCount}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Hiển thị</span>
@@ -292,7 +333,8 @@ export default function MilitaryHeaderPanel({
           </>
         ) : (
           <p className="text-xs text-muted-foreground">
-            Bộ lọc đang thu gọn. Năm hiện tại: {selectedYear}. Danh sách: {selectedTypeLabel}
+            Bộ lọc đang thu gọn. Năm hiện tại: {selectedYear}. Danh sách:{" "}
+            {selectedTypeLabel}
           </p>
         )}
       </Card>

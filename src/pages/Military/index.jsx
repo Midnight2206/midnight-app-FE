@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useConfirmDialog } from "@/components/ConfirmDialogProvider";
 import { getApiErrorMessage } from "@/utils/apiError";
+import { DISPLAY_LABELS } from "@/utils/constants";
 import { getPaginationMeta } from "@/utils/pagination";
 import {
   useAcceptTransferRequestMutation,
@@ -108,25 +109,30 @@ export default function MilitaryPage() {
   const isApplyingUrlRef = useRef(false);
   const hasInitializedQueryFromStorageRef = useRef(false);
 
-  const [selectedUnitId, setSelectedUnitId] = useState(
-    () => String(searchParams.get("unitId") || "").trim(),
+  const [selectedUnitId, setSelectedUnitId] = useState(() =>
+    String(searchParams.get("unitId") || "").trim(),
   );
   const [newUnitName, setNewUnitName] = useState("");
   const [importFile, setImportFile] = useState(null);
-  const [searchInput, setSearchInput] = useState(
-    () => String(searchParams.get("q") || "").trim(),
+  const [searchInput, setSearchInput] = useState(() =>
+    String(searchParams.get("q") || "").trim(),
   );
-  const [searchTerm, setSearchTerm] = useState(
-    () => String(searchParams.get("q") || "").trim(),
+  const [searchTerm, setSearchTerm] = useState(() =>
+    String(searchParams.get("q") || "").trim(),
   );
-  const [selectedType, setSelectedType] = useState(
-    () => String(searchParams.get("type") || "").trim(),
+  const [selectedType, setSelectedType] = useState(() =>
+    String(searchParams.get("type") || "").trim(),
   );
   const [militaryImportType, setMilitaryImportType] = useState("");
   const [newTypeCode, setNewTypeCode] = useState("");
-  const [page, setPage] = useState(() => parsePositiveInt(searchParams.get("page"), 1));
+  const [page, setPage] = useState(() =>
+    parsePositiveInt(searchParams.get("page"), 1),
+  );
   const [limit, setLimit] = useState(() => {
-    const parsedLimit = parsePositiveInt(searchParams.get("limit"), DEFAULT_LIMIT);
+    const parsedLimit = parsePositiveInt(
+      searchParams.get("limit"),
+      DEFAULT_LIMIT,
+    );
     return PAGE_LIMIT_VALUES.has(parsedLimit) ? parsedLimit : DEFAULT_LIMIT;
   });
   const [sortConfig, setSortConfig] = useState(() => {
@@ -147,7 +153,13 @@ export default function MilitaryPage() {
   const [activeViewTab, setActiveViewTab] = usePersistentTab(
     "military_active_view_tab",
     "military-list",
-    ["military-list", "size-list", "increase-list", "decrease-list", "assigned-unit-list"],
+    [
+      "military-list",
+      "size-list",
+      "increase-list",
+      "decrease-list",
+      "assigned-unit-list",
+    ],
   );
   const [increaseQuickFilter, setIncreaseQuickFilter] = useState(() => {
     const value = String(searchParams.get("increase") || "")
@@ -160,21 +172,32 @@ export default function MilitaryPage() {
   );
   const [openRegistrationDialog, setOpenRegistrationDialog] = useState(false);
   const [selectedMilitary, setSelectedMilitary] = useState(null);
-  const [registrationTemplateIncludeExisting, setRegistrationTemplateIncludeExisting] =
+  const [
+    registrationTemplateIncludeExisting,
+    setRegistrationTemplateIncludeExisting,
+  ] = useState(true);
+  const [registrationImportKeepExisting, setRegistrationImportKeepExisting] =
     useState(true);
-  const [registrationImportKeepExisting, setRegistrationImportKeepExisting] = useState(true);
-  const [newRegistrationYear, setNewRegistrationYear] = useState(new Date().getFullYear() + 1);
+  const [newRegistrationYear, setNewRegistrationYear] = useState(
+    new Date().getFullYear() + 1,
+  );
   const [registrationImportFile, setRegistrationImportFile] = useState(null);
-  const [selectedRegistrationCategoryIds, setSelectedRegistrationCategoryIds] = useState([]);
-  const [registrationImportPreview, setRegistrationImportPreview] = useState(null);
+  const [selectedRegistrationCategoryIds, setSelectedRegistrationCategoryIds] =
+    useState([]);
+  const [registrationImportPreview, setRegistrationImportPreview] =
+    useState(null);
   const [openCutTransferDialog, setOpenCutTransferDialog] = useState(false);
   const [cutTransferMilitary, setCutTransferMilitary] = useState(null);
   const [cutTransferTypeId, setCutTransferTypeId] = useState("");
   const [cutTransferTargetUnitId, setCutTransferTargetUnitId] = useState("");
-  const [cutTransferYear, setCutTransferYear] = useState(() => new Date().getFullYear());
+  const [cutTransferYear, setCutTransferYear] = useState(() =>
+    new Date().getFullYear(),
+  );
   const [cutTransferNote, setCutTransferNote] = useState("");
-  const [openMilitaryImportDialog, setOpenMilitaryImportDialog] = useState(false);
-  const [openRegistrationImportDialog, setOpenRegistrationImportDialog] = useState(false);
+  const [openMilitaryImportDialog, setOpenMilitaryImportDialog] =
+    useState(false);
+  const [openRegistrationImportDialog, setOpenRegistrationImportDialog] =
+    useState(false);
   const [militaryImportReport, setMilitaryImportReport] = useState(null);
   const [externalIncreaseForm, setExternalIncreaseForm] = useState({
     militaryCode: "",
@@ -191,12 +214,15 @@ export default function MilitaryPage() {
   });
 
   const unitScopeKey = isSuperAdmin ? "superadmin" : "admin";
-  const { data: unitsData, refetch: refetchUnits } = useGetMilitaryUnitsQuery(unitScopeKey, {
-    skip: !canAccess,
-    refetchOnMountOrArgChange: true,
-    refetchOnFocus: true,
-    refetchOnReconnect: true,
-  });
+  const { data: unitsData, refetch: refetchUnits } = useGetMilitaryUnitsQuery(
+    unitScopeKey,
+    {
+      skip: !canAccess,
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    },
+  );
   const units = Array.isArray(unitsData?.units) ? unitsData.units : [];
   const { data: allUnitsData } = useGetMilitaryUnitsQuery("all", {
     skip: !canManageTransfer,
@@ -210,7 +236,9 @@ export default function MilitaryPage() {
   );
   const adminUnit = !isSuperAdmin ? units[0] : null;
   const currentAdminUnitId = Number(adminUnit?.id || user?.unitId || 0);
-  const currentAdminUnitName = String(adminUnit?.name || user?.unit?.name || "").trim();
+  const currentAdminUnitName = String(
+    adminUnit?.name || user?.unit?.name || "",
+  ).trim();
   const selectedScopeUnitId = useMemo(() => {
     if (isSuperAdmin) {
       const parsed = Number(selectedUnitId);
@@ -221,7 +249,9 @@ export default function MilitaryPage() {
   }, [adminUnit?.id, isSuperAdmin, selectedUnitId, user?.unitId]);
   const selectedScopeUnitName = useMemo(() => {
     if (isSuperAdmin) {
-      const matched = units.find((item) => Number(item.id) === Number(selectedUnitId));
+      const matched = units.find(
+        (item) => Number(item.id) === Number(selectedUnitId),
+      );
       return matched?.name || "";
     }
     return String(adminUnit?.name || user?.unit?.name || "").trim();
@@ -242,32 +272,35 @@ export default function MilitaryPage() {
     refetchOnFocus: true,
     refetchOnReconnect: true,
   });
-  const { data: yearsData, refetch: refetchYears } = useGetMilitaryRegistrationYearsQuery(undefined, {
-    skip: !canAccess,
-    refetchOnMountOrArgChange: true,
-    refetchOnFocus: true,
-    refetchOnReconnect: true,
-  });
-  const registrationYears = useMemo(
-    () => (Array.isArray(yearsData?.years) ? yearsData.years : []),
-    [yearsData],
-  );
-  const yearOptions = useMemo(() => getYearOptions(registrationYears), [registrationYears]);
-  const yearStatusMap = useMemo(
-    () => new Map(registrationYears.map((item) => [item.year, item.status])),
-    [registrationYears],
-  );
-  const { data: militaryTypesData, refetch: refetchMilitaryTypes } = useGetMilitaryTypesQuery(
-    undefined,
-    {
+  const { data: yearsData, refetch: refetchYears } =
+    useGetMilitaryRegistrationYearsQuery(undefined, {
       skip: !canAccess,
       refetchOnMountOrArgChange: true,
       refetchOnFocus: true,
       refetchOnReconnect: true,
-    },
+    });
+  const registrationYears = useMemo(
+    () => (Array.isArray(yearsData?.years) ? yearsData.years : []),
+    [yearsData],
   );
+  const yearOptions = useMemo(
+    () => getYearOptions(registrationYears),
+    [registrationYears],
+  );
+  const yearStatusMap = useMemo(
+    () => new Map(registrationYears.map((item) => [item.year, item.status])),
+    [registrationYears],
+  );
+  const { data: militaryTypesData, refetch: refetchMilitaryTypes } =
+    useGetMilitaryTypesQuery(undefined, {
+      skip: !canAccess,
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    });
   const militaryTypes = useMemo(
-    () => (Array.isArray(militaryTypesData?.types) ? militaryTypesData.types : []),
+    () =>
+      Array.isArray(militaryTypesData?.types) ? militaryTypesData.types : [],
     [militaryTypesData],
   );
   const selectedTypeLabel = useMemo(() => {
@@ -319,8 +352,13 @@ export default function MilitaryPage() {
     const type = String(searchParams.get("type") || "").trim();
     const keyword = String(searchParams.get("q") || "").trim();
     const nextPage = parsePositiveInt(searchParams.get("page"), 1);
-    const parsedLimit = parsePositiveInt(searchParams.get("limit"), DEFAULT_LIMIT);
-    const nextLimit = PAGE_LIMIT_VALUES.has(parsedLimit) ? parsedLimit : DEFAULT_LIMIT;
+    const parsedLimit = parsePositiveInt(
+      searchParams.get("limit"),
+      DEFAULT_LIMIT,
+    );
+    const nextLimit = PAGE_LIMIT_VALUES.has(parsedLimit)
+      ? parsedLimit
+      : DEFAULT_LIMIT;
     const nextSortByRaw = String(searchParams.get("sortBy") || "").trim();
     const nextSortDirRaw = String(searchParams.get("sortDir") || "")
       .trim()
@@ -370,8 +408,12 @@ export default function MilitaryPage() {
       return { key: nextSortBy, direction: nextSortDir };
     });
     setSelectedYear((prev) => (prev === nextYear ? prev : nextYear));
-    setIncreaseQuickFilter((prev) => (prev === nextIncrease ? prev : nextIncrease));
-    setOpenListHeaderFilters((prev) => (prev === nextFiltersOpen ? prev : nextFiltersOpen));
+    setIncreaseQuickFilter((prev) =>
+      prev === nextIncrease ? prev : nextIncrease,
+    );
+    setOpenListHeaderFilters((prev) =>
+      prev === nextFiltersOpen ? prev : nextFiltersOpen,
+    );
   }, [currentYear, searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -391,7 +433,8 @@ export default function MilitaryPage() {
       next.set("sortDir", sortConfig.direction);
     }
     if (selectedYear !== currentYear) next.set("year", String(selectedYear));
-    if (increaseQuickFilter !== "all") next.set("increase", increaseQuickFilter);
+    if (increaseQuickFilter !== "all")
+      next.set("increase", increaseQuickFilter);
     if (openListHeaderFilters) next.set("filters", "1");
 
     const nextRaw = next.toString();
@@ -454,7 +497,16 @@ export default function MilitaryPage() {
 
     if (!isSuperAdmin) return params;
     return selectedUnitId ? { ...params, unitId: selectedUnitId } : params;
-  }, [isSuperAdmin, limit, page, searchTerm, selectedType, selectedUnitId, selectedYear, sortConfig]);
+  }, [
+    isSuperAdmin,
+    limit,
+    page,
+    searchTerm,
+    selectedType,
+    selectedUnitId,
+    selectedYear,
+    sortConfig,
+  ]);
 
   const registrationListQueryParams = useMemo(() => {
     const params = {
@@ -470,12 +522,23 @@ export default function MilitaryPage() {
 
     if (!isSuperAdmin) return params;
     return selectedUnitId ? { ...params, unitId: selectedUnitId } : params;
-  }, [isSuperAdmin, limit, page, searchTerm, selectedType, selectedUnitId, selectedYear]);
+  }, [
+    isSuperAdmin,
+    limit,
+    page,
+    searchTerm,
+    selectedType,
+    selectedUnitId,
+    selectedYear,
+  ]);
 
-  const { data, isLoading, isFetching, error, refetch } = useGetMilitariesQuery(queryParams, {
-    skip: !canAccess,
-    refetchOnMountOrArgChange: true,
-  });
+  const { data, isLoading, isFetching, error, refetch } = useGetMilitariesQuery(
+    queryParams,
+    {
+      skip: !canAccess,
+      refetchOnMountOrArgChange: true,
+    },
+  );
   const {
     data: registrationListData,
     isLoading: isLoadingRegistrationList,
@@ -521,23 +584,36 @@ export default function MilitaryPage() {
     refetchOnReconnect: true,
   });
 
-  const [createUnit, { isLoading: isCreatingUnit }] = useCreateMilitaryUnitMutation();
-  const [createMilitaryType, { isLoading: isCreatingType }] = useCreateMilitaryTypeMutation();
-  const [deleteMilitaryType, { isLoading: isDeletingType }] = useDeleteMilitaryTypeMutation();
+  const [createUnit, { isLoading: isCreatingUnit }] =
+    useCreateMilitaryUnitMutation();
+  const [createMilitaryType, { isLoading: isCreatingType }] =
+    useCreateMilitaryTypeMutation();
+  const [deleteMilitaryType, { isLoading: isDeletingType }] =
+    useDeleteMilitaryTypeMutation();
   const [downloadTemplate, { isLoading: isDownloadingTemplate }] =
     useDownloadMilitaryTemplateMutation();
-  const [downloadRegistrationTemplate, { isLoading: isDownloadingRegistrationTemplate }] =
-    useDownloadRegistrationTemplateMutation();
-  const [importMilitaries, { isLoading: isImporting }] = useImportMilitariesMutation();
+  const [
+    downloadRegistrationTemplate,
+    { isLoading: isDownloadingRegistrationTemplate },
+  ] = useDownloadRegistrationTemplateMutation();
+  const [importMilitaries, { isLoading: isImporting }] =
+    useImportMilitariesMutation();
   const [importMilitaryRegistrations, { isLoading: isImportingRegistrations }] =
     useImportMilitaryRegistrationsMutation();
-  const [previewMilitaryRegistrationsImport, { isLoading: isPreviewingRegistrationImport }] =
-    usePreviewMilitaryRegistrationsImportMutation();
-  const [createMilitaryRegistrationYear, { isLoading: isCreatingRegistrationYear }] =
-    useCreateMilitaryRegistrationYearMutation();
-  const [resetMilitaries, { isLoading: isResetting }] = useResetMilitariesMutation();
-  const [transferMilitaryAssurance, { isLoading: isSubmittingExternalIncrease }] =
-    useTransferMilitaryAssuranceMutation();
+  const [
+    previewMilitaryRegistrationsImport,
+    { isLoading: isPreviewingRegistrationImport },
+  ] = usePreviewMilitaryRegistrationsImportMutation();
+  const [
+    createMilitaryRegistrationYear,
+    { isLoading: isCreatingRegistrationYear },
+  ] = useCreateMilitaryRegistrationYearMutation();
+  const [resetMilitaries, { isLoading: isResetting }] =
+    useResetMilitariesMutation();
+  const [
+    transferMilitaryAssurance,
+    { isLoading: isSubmittingExternalIncrease },
+  ] = useTransferMilitaryAssuranceMutation();
   const [createMilitaryAssignedUnit, { isLoading: isCreatingAssignedUnit }] =
     useCreateMilitaryAssignedUnitMutation();
   const [updateMilitaryAssignedUnit, { isLoading: isUpdatingAssignedUnit }] =
@@ -546,14 +622,18 @@ export default function MilitaryPage() {
     useDeleteMilitaryAssignedUnitMutation();
   const [updateMilitaryRegistrations, { isLoading: isSavingRegistrations }] =
     useUpdateMilitaryRegistrationsMutation();
-  const [createCutTransferRequest, { isLoading: isCreatingCutTransferRequest }] =
-    useCreateCutTransferRequestMutation();
+  const [
+    createCutTransferRequest,
+    { isLoading: isCreatingCutTransferRequest },
+  ] = useCreateCutTransferRequestMutation();
   const [acceptTransferRequest, { isLoading: isAcceptingTransferRequest }] =
     useAcceptTransferRequestMutation();
   const [undoCutTransferRequest, { isLoading: isUndoingCutTransferRequest }] =
     useUndoCutTransferRequestMutation();
-  const [upsertRegistrationPeriod, { isLoading: isUpsertingRegistrationPeriod }] =
-    useUpsertRegistrationPeriodMutation();
+  const [
+    upsertRegistrationPeriod,
+    { isLoading: isUpsertingRegistrationPeriod },
+  ] = useUpsertRegistrationPeriodMutation();
 
   const handleCreateType = async (e) => {
     e.preventDefault();
@@ -561,7 +641,7 @@ export default function MilitaryPage() {
 
     const code = String(newTypeCode || "").trim();
     if (!code) {
-      toast.error("Vui lòng nhập mã type.");
+      toast.error("Vui lòng nhập mã loại quân nhân.");
       return;
     }
 
@@ -633,11 +713,13 @@ export default function MilitaryPage() {
   const registrationTotal = registrationPagination.total;
   const registrationTotalPages = registrationPagination.totalPages;
   const registrationCurrentPage = registrationPagination.page;
-  const canImport =
-    canOperateUnitAssurance;
+  const canImport = canOperateUnitAssurance;
 
   const assignedUnits = useMemo(
-    () => (Array.isArray(assignedUnitsData?.assignedUnits) ? assignedUnitsData.assignedUnits : []),
+    () =>
+      Array.isArray(assignedUnitsData?.assignedUnits)
+        ? assignedUnitsData.assignedUnits
+        : [],
     [assignedUnitsData],
   );
   const incomingTransferRequests = useMemo(
@@ -645,11 +727,15 @@ export default function MilitaryPage() {
     [incomingTransferRequestsData],
   );
   const incomingTransferRequestsByYear = useMemo(
-    () => getIncomingTransferRequestsByYear(incomingTransferRequests, selectedYear),
+    () =>
+      getIncomingTransferRequestsByYear(incomingTransferRequests, selectedYear),
     [incomingTransferRequests, selectedYear],
   );
   const mergedIncreaseRows = useMemo(() => {
-    return getMergedIncreaseRows(incomingMilitariesByYear, incomingTransferRequestsByYear);
+    return getMergedIncreaseRows(
+      incomingMilitariesByYear,
+      incomingTransferRequestsByYear,
+    );
   }, [incomingMilitariesByYear, incomingTransferRequestsByYear]);
   const filteredIncreaseRows = useMemo(() => {
     return filterIncreaseRows(mergedIncreaseRows, increaseQuickFilter);
@@ -661,14 +747,17 @@ export default function MilitaryPage() {
     if (!Array.isArray(cutTransferMilitary?.typeAssignments)) return [];
     return cutTransferMilitary.typeAssignments
       .map((item) => item?.type)
-      .filter((item) => Number.isInteger(Number(item?.id)) && Number(item.id) > 0);
+      .filter(
+        (item) => Number.isInteger(Number(item?.id)) && Number(item.id) > 0,
+      );
   }, [cutTransferMilitary]);
   const registrationCategories = useMemo(
     () => getRegistrationCategories(registrationOptionsData),
     [registrationOptionsData],
   );
   const sizeTableCategories = useMemo(
-    () => getSizeTableCategories(registrationCategories, registrationMilitaries),
+    () =>
+      getSizeTableCategories(registrationCategories, registrationMilitaries),
     [registrationCategories, registrationMilitaries],
   );
 
@@ -708,7 +797,9 @@ export default function MilitaryPage() {
   const handleSubmitExternalIncrease = async () => {
     if (!canManageTransfer) return;
     if (!Number.isInteger(currentAdminUnitId) || currentAdminUnitId <= 0) {
-      toast.error("Không xác định được đơn vị tiếp nhận của tài khoản hiện tại.");
+      toast.error(
+        "Không xác định được đơn vị tiếp nhận của tài khoản hiện tại.",
+      );
       return;
     }
 
@@ -720,10 +811,14 @@ export default function MilitaryPage() {
       type: String(externalIncreaseForm.type || "").trim(),
       position: String(externalIncreaseForm.position || "").trim(),
       assignedUnitId: Number(externalIncreaseForm.assignedUnitId),
-      initialCommissioningYear: Number(externalIncreaseForm.initialCommissioningYear),
+      initialCommissioningYear: Number(
+        externalIncreaseForm.initialCommissioningYear,
+      ),
       fromUnitId: null,
       toUnitId: currentAdminUnitId,
-      fromExternalUnitName: String(externalIncreaseForm.fromExternalUnitName || "").trim(),
+      fromExternalUnitName: String(
+        externalIncreaseForm.fromExternalUnitName || "",
+      ).trim(),
       transferYear: Number(externalIncreaseForm.transferYear),
       note: String(externalIncreaseForm.note || "").trim() || undefined,
     };
@@ -752,8 +847,11 @@ export default function MilitaryPage() {
       toast.error("Vui lòng nhập chức vụ.");
       return;
     }
-    if (!Number.isInteger(payload.assignedUnitId) || payload.assignedUnitId <= 0) {
-      toast.error("Vui lòng chọn assignedUnit tiếp nhận.");
+    if (
+      !Number.isInteger(payload.assignedUnitId) ||
+      payload.assignedUnitId <= 0
+    ) {
+      toast.error(`Vui lòng chọn ${DISPLAY_LABELS.assignedUnit} tiếp nhận.`);
       return;
     }
     if (
@@ -781,7 +879,11 @@ export default function MilitaryPage() {
       await transferMilitaryAssurance(payload).unwrap();
       toast.success("Đã tiếp nhận quân nhân từ ngoài hệ thống.");
       resetExternalIncreaseForm();
-      await Promise.all([refetch(), refetchIncomingTransferRequests(), refetchAssignedUnits()]);
+      await Promise.all([
+        refetch(),
+        refetchIncomingTransferRequests(),
+        refetchAssignedUnits(),
+      ]);
     } catch (err) {
       toast.error(getApiErrorMessage(err, "Tiếp nhận quân nhân thất bại."));
     }
@@ -992,11 +1094,17 @@ export default function MilitaryPage() {
         <Tabs value={activeViewTab} onValueChange={setActiveViewTab}>
           <div className="-mx-1 overflow-x-auto px-1 pb-1">
             <TabsList className="inline-flex min-w-max">
-              <TabsTrigger value="military-list">Danh sách quân nhân</TabsTrigger>
-              <TabsTrigger value="size-list">Danh sách cỡ số theo năm</TabsTrigger>
+              <TabsTrigger value="military-list">
+                Danh sách quân nhân
+              </TabsTrigger>
+              <TabsTrigger value="size-list">
+                Danh sách cỡ số theo năm
+              </TabsTrigger>
               <TabsTrigger value="increase-list">Quân nhân tăng</TabsTrigger>
               <TabsTrigger value="decrease-list">Quân nhân giảm</TabsTrigger>
-              <TabsTrigger value="assigned-unit-list">Danh mục assignedUnit</TabsTrigger>
+              <TabsTrigger value="assigned-unit-list">
+                Danh mục {DISPLAY_LABELS.assignedUnitTitle}
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -1020,6 +1128,9 @@ export default function MilitaryPage() {
               totalPages={totalPages}
               total={total}
               onPageChange={setPage}
+              buildPersonalLedgerPath={(military) =>
+                `/militaries/${military.id}/personal-ledger`
+              }
               focusedTypeCode={selectedType}
             />
           </TabsContent>
@@ -1038,7 +1149,9 @@ export default function MilitaryPage() {
               selectedYear={selectedYear}
               canManageRegistrationPeriod={canManageRegistrationPeriod}
               isUpsertingRegistrationPeriod={isUpsertingRegistrationPeriod}
-              handleChangeRegistrationPeriodStatus={handleChangeRegistrationPeriodStatus}
+              handleChangeRegistrationPeriodStatus={
+                handleChangeRegistrationPeriodStatus
+              }
               isSelectedYearOpen={isSelectedYearOpen}
               registrationMilitaries={registrationMilitaries}
               canRegisterSizes={canRegisterSizes}
@@ -1055,8 +1168,12 @@ export default function MilitaryPage() {
               selectedYear={selectedYear}
               isFetching={isFetching}
               isLoading={isLoading}
-              isFetchingIncomingTransferRequests={isFetchingIncomingTransferRequests}
-              isLoadingIncomingTransferRequests={isLoadingIncomingTransferRequests}
+              isFetchingIncomingTransferRequests={
+                isFetchingIncomingTransferRequests
+              }
+              isLoadingIncomingTransferRequests={
+                isLoadingIncomingTransferRequests
+              }
               increaseQuickFilter={increaseQuickFilter}
               setIncreaseQuickFilter={setIncreaseQuickFilter}
               filteredIncreaseRows={filteredIncreaseRows}
@@ -1135,10 +1252,16 @@ export default function MilitaryPage() {
         open={openRegistrationImportDialog}
         onOpenChange={(open) => setOpenRegistrationImportDialog(open)}
         selectedYear={selectedYear}
-        registrationTemplateIncludeExisting={registrationTemplateIncludeExisting}
-        onChangeRegistrationTemplateIncludeExisting={setRegistrationTemplateIncludeExisting}
+        registrationTemplateIncludeExisting={
+          registrationTemplateIncludeExisting
+        }
+        onChangeRegistrationTemplateIncludeExisting={
+          setRegistrationTemplateIncludeExisting
+        }
         registrationImportKeepExisting={registrationImportKeepExisting}
-        onChangeRegistrationImportKeepExisting={setRegistrationImportKeepExisting}
+        onChangeRegistrationImportKeepExisting={
+          setRegistrationImportKeepExisting
+        }
         registrationCategories={registrationCategories}
         selectedRegistrationCategoryIds={selectedRegistrationCategoryIds}
         setSelectedRegistrationCategoryIds={setSelectedRegistrationCategoryIds}
@@ -1172,9 +1295,12 @@ export default function MilitaryPage() {
         military={selectedMilitary}
         categories={registrationOptionsData?.categories || []}
         registrations={selectedMilitaryRegistrationsData?.registrations || []}
-        isLoadingOptions={isLoadingRegistrationOptions || isFetchingRegistrationOptions}
+        isLoadingOptions={
+          isLoadingRegistrationOptions || isFetchingRegistrationOptions
+        }
         isLoadingRegistrations={
-          isLoadingSelectedMilitaryRegistrations || isFetchingSelectedMilitaryRegistrations
+          isLoadingSelectedMilitaryRegistrations ||
+          isFetchingSelectedMilitaryRegistrations
         }
         isSaving={isSavingRegistrations}
         year={selectedYear}

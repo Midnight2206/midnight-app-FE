@@ -102,6 +102,63 @@ export const militaryApi = baseApi.injectEndpoints({
       ],
     }),
 
+    getMyPersonalLedger: builder.query({
+      query: (params = {}) => ({
+        url: "/militaries/me/personal-ledger",
+        method: "get",
+        params,
+      }),
+      transformResponse: (response) => response?.data ?? response ?? {},
+      providesTags: [{ type: "Military", id: "PERSONAL_LEDGER_ME" }],
+    }),
+
+    getMilitaryPersonalLedger: builder.query({
+      query: ({ militaryId, ...params }) => ({
+        url: `/militaries/${militaryId}/personal-ledger`,
+        method: "get",
+        params,
+      }),
+      transformResponse: (response) => response?.data ?? response ?? {},
+      providesTags: (result, error, { militaryId }) => [
+        { type: "Military", id: `PERSONAL_LEDGER_${militaryId}` },
+      ],
+    }),
+
+    updateMilitaryFromPersonalLedger: builder.mutation({
+      query: ({ militaryId, ...data }) => ({
+        url: `/militaries/${militaryId}`,
+        method: "patch",
+        data,
+      }),
+      invalidatesTags: (result, error, { militaryId }) => [
+        { type: "Military", id: "LIST" },
+        { type: "Military", id: `PERSONAL_LEDGER_${militaryId}` },
+      ],
+    }),
+
+    downloadAllocationModeBaselineTemplate: builder.mutation({
+      query: (params = {}) => ({
+        url: "/militaries/allocation-mode-baselines/template",
+        method: "get",
+        params,
+        responseType: "blob",
+      }),
+    }),
+
+    importAllocationModeBaselineTemplate: builder.mutation({
+      query: ({ formData }) => ({
+        url: "/militaries/allocation-mode-baselines/import",
+        method: "post",
+        data: formData,
+      }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Military", id: "LIST" },
+        ...(arg?.militaryId
+          ? [{ type: "Military", id: `PERSONAL_LEDGER_${arg.militaryId}` }]
+          : []),
+      ],
+    }),
+
     updateMilitaryRegistrations: builder.mutation({
       query: ({ militaryId, registrations, year }) => ({
         url: `/militaries/${militaryId}/registrations`,
@@ -292,6 +349,11 @@ export const {
   useGetMilitaryRegistrationYearsQuery,
   useCreateMilitaryRegistrationYearMutation,
   useGetMilitaryRegistrationsQuery,
+  useGetMyPersonalLedgerQuery,
+  useGetMilitaryPersonalLedgerQuery,
+  useUpdateMilitaryFromPersonalLedgerMutation,
+  useDownloadAllocationModeBaselineTemplateMutation,
+  useImportAllocationModeBaselineTemplateMutation,
   useUpdateMilitaryRegistrationsMutation,
   useCutMilitaryAssuranceMutation,
   useReceiveMilitaryAssuranceMutation,

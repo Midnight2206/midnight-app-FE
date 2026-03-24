@@ -18,6 +18,12 @@ export const ACCESS_RULES = {
   militaryPage: {
     anyPermissionPrefixes: [PERMISSION_PREFIXES.MILITARIES],
   },
+  personalLedgerSelfPage: {
+    anyRoles: [ROLE_NAMES.USER],
+  },
+  personalLedgerAdminPage: {
+    anyPermissionPrefixes: [PERMISSION_PREFIXES.MILITARIES],
+  },
   sizeRegistrationPage: {
     anyPermissionPrefixes: [PERMISSION_PREFIXES.SIZE_REGISTRATIONS],
   },

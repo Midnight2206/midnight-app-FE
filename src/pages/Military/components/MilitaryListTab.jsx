@@ -1,4 +1,5 @@
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import { Card } from "@/components/ui/card";
 import { TableSkeleton } from "@/components/AppSkeletons";
@@ -17,7 +18,7 @@ const SORT_KEYS = [
   ["type", "Loại"],
   ["position", "Chức vụ"],
   ["unit", "Đơn vị"],
-  ["claim", "Trạng thái claim"],
+  ["claim", "Trạng thái liên kết tài khoản"],
 ];
 
 function renderSortIcon(sortConfig, key) {
@@ -57,6 +58,7 @@ export default function MilitaryListTab({
   totalPages,
   total,
   onPageChange,
+  buildPersonalLedgerPath,
 }) {
   if (isLoading) {
     return <TableSkeleton rows={10} cols={11} />;
@@ -73,7 +75,10 @@ export default function MilitaryListTab({
 
   return (
     <Card className="relative surface overflow-hidden">
-      <OverlayLoader show={isFetching && !isLoading} label="Đang cập nhật danh sách quân nhân..." />
+      <OverlayLoader
+        show={isFetching && !isLoading}
+        label="Đang cập nhật danh sách quân nhân..."
+      />
       <div className="data-table-wrap border-0 rounded-none">
         <table className="data-table min-w-[1160px]">
           <thead>
@@ -88,7 +93,9 @@ export default function MilitaryListTab({
                     {label}
                     {renderSortIcon(sortConfig, key)}
                     {sortConfig.key === key && (
-                      <span className="text-[11px] leading-none">{sortLabel}</span>
+                      <span className="text-[11px] leading-none">
+                        {sortLabel}
+                      </span>
                     )}
                   </button>
                 </th>
@@ -99,24 +106,44 @@ export default function MilitaryListTab({
           <tbody>
             {militaries.length === 0 ? (
               <tr>
-                <td colSpan={canManageTransfer ? 12 : 11} className="text-center text-muted-foreground py-8">
-                  {searchTerm ? "Không có dữ liệu phù hợp từ khóa tìm kiếm." : "Chưa có dữ liệu quân nhân."}
+                <td
+                  colSpan={canManageTransfer ? 12 : 11}
+                  className="text-center text-muted-foreground py-8"
+                >
+                  {searchTerm
+                    ? "Không có dữ liệu phù hợp từ khóa tìm kiếm."
+                    : "Chưa có dữ liệu quân nhân."}
                 </td>
               </tr>
             ) : (
               militaries.map((m) => (
                 <tr key={m.id}>
                   <td>
-                    {m.fullname || "-"}
+                    {typeof buildPersonalLedgerPath === "function" ? (
+                      <Link
+                        to={buildPersonalLedgerPath(m)}
+                        className="font-medium text-primary hover:underline"
+                      >
+                        {m.fullname || "-"}
+                      </Link>
+                    ) : (
+                      m.fullname || "-"
+                    )}
                   </td>
                   <td>{m.militaryCode || "-"}</td>
                   <td>{m.initialCommissioningYear || "-"}</td>
                   <td>{m.rank || "-"}</td>
                   <td>{formatGender(m.gender)}</td>
-                  <td>{formatMilitaryTypeList(m.types?.length ? m.types : m.type)}</td>
+                  <td>
+                    {formatMilitaryTypeList(m.types?.length ? m.types : m.type)}
+                  </td>
                   <td>{m.position || "-"}</td>
                   <td>{m.assignedUnit || "-"}</td>
-                  <td>{m.claimedByUserId ? "Đã claim" : "Chưa claim"}</td>
+                  <td>
+                    {m.claimedByUserId
+                      ? "Đã liên kết tài khoản"
+                      : "Chưa liên kết tài khoản"}
+                  </td>
                   {canManageTransfer && (
                     <td>
                       <div className="flex flex-wrap items-center gap-2">

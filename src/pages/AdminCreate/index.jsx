@@ -12,6 +12,7 @@ import {
 import { ACCESS_RULES } from "@/features/auth/authorization";
 import { useAuthorization } from "@/features/auth/useAuthorization";
 import { getApiErrorMessage } from "@/utils/apiError";
+import { DISPLAY_LABELS } from "@/utils/constants";
 import DashboardPageShell from "@/layouts/components/DashboardPageShell";
 
 export default function AdminCreatePage() {
@@ -25,12 +26,10 @@ export default function AdminCreatePage() {
     unitId: "",
   });
 
-  const { data: unitsData, isFetching: isFetchingUnits } = useGetAccountUnitsQuery(
-    undefined,
-    {
+  const { data: unitsData, isFetching: isFetchingUnits } =
+    useGetAccountUnitsQuery(undefined, {
       skip: !canAccessAccountDashboard,
-    },
-  );
+    });
 
   const [createAdmin, { isLoading: isCreating }] =
     useCreateAdminAccountMutation();
@@ -81,16 +80,21 @@ export default function AdminCreatePage() {
         {isFetchingUnits && units.length === 0 && (
           <SectionLoader label="Đang tải danh sách đơn vị..." className="p-3" />
         )}
-        <form className="grid gap-3 md:grid-cols-2" onSubmit={handleCreateAdmin}>
+        <form
+          className="grid gap-3 md:grid-cols-2"
+          onSubmit={handleCreateAdmin}
+        >
           <Input
             type="email"
             placeholder="Email"
             value={form.email}
-            onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, email: e.target.value }))
+            }
             autoComplete="email"
           />
           <Input
-            placeholder="Username"
+            placeholder={DISPLAY_LABELS.username}
             value={form.username}
             onChange={(e) =>
               setForm((prev) => ({ ...prev, username: e.target.value }))
@@ -109,10 +113,14 @@ export default function AdminCreatePage() {
           <select
             className="h-10 rounded-xl border border-input bg-background px-3 text-sm md:col-span-2"
             value={form.unitId}
-            onChange={(e) => setForm((prev) => ({ ...prev, unitId: e.target.value }))}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, unitId: e.target.value }))
+            }
             disabled={isFetchingUnits || selectableUnits.length === 0}
           >
-            <option value="">{isFetchingUnits ? "Đang tải đơn vị..." : "Chọn đơn vị"}</option>
+            <option value="">
+              {isFetchingUnits ? "Đang tải đơn vị..." : "Chọn đơn vị"}
+            </option>
             {selectableUnits.map((unit) => (
               <option key={unit.id} value={unit.id}>
                 {unit.id} - {unit.name}
@@ -136,7 +144,11 @@ export default function AdminCreatePage() {
                 !form.unitId
               }
             >
-              <LoadingButtonLabel loading={isCreating} loadingText="Đang tạo ADMIN..." defaultText="Tạo ADMIN" />
+              <LoadingButtonLabel
+                loading={isCreating}
+                loadingText="Đang tạo ADMIN..."
+                defaultText="Tạo ADMIN"
+              />
             </Button>
           </div>
         </form>

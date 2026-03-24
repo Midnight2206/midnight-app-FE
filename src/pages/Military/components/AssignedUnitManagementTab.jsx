@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { OverlayLoader, SectionLoader } from "@/components/AppLoading";
 import { getApiErrorMessage } from "@/utils/apiError";
+import { DISPLAY_LABELS } from "@/utils/constants";
 
 export default function AssignedUnitManagementTab({
   canManageAssignedUnits,
@@ -35,7 +36,8 @@ export default function AssignedUnitManagementTab({
   if (isSuperAdmin && !selectedScopeUnitId) {
     return (
       <Card className="surface p-6 text-sm text-muted-foreground">
-        Chọn một đơn vị ở bộ lọc phía trên để quản lý danh mục assignedUnit.
+        Chọn một đơn vị ở bộ lọc phía trên để quản lý danh mục{" "}
+        {DISPLAY_LABELS.assignedUnit}.
       </Card>
     );
   }
@@ -44,16 +46,21 @@ export default function AssignedUnitManagementTab({
     event.preventDefault();
     const name = String(newAssignedUnitName || "").trim();
     if (!name) {
-      toast.error("Vui lòng nhập tên assigned unit.");
+      toast.error(`Vui lòng nhập tên ${DISPLAY_LABELS.assignedUnit}.`);
       return;
     }
 
     try {
       await onCreateAssignedUnit(name);
       setNewAssignedUnitName("");
-      toast.success("Đã thêm assigned unit.");
+      toast.success(`Đã thêm ${DISPLAY_LABELS.assignedUnit}.`);
     } catch (errorValue) {
-      toast.error(getApiErrorMessage(errorValue, "Không thể thêm assigned unit."));
+      toast.error(
+        getApiErrorMessage(
+          errorValue,
+          `Không thể thêm ${DISPLAY_LABELS.assignedUnit}.`,
+        ),
+      );
     }
   };
 
@@ -61,7 +68,7 @@ export default function AssignedUnitManagementTab({
     const name = String(editingName || "").trim();
     if (!editingId) return;
     if (!name) {
-      toast.error("Vui lòng nhập tên assigned unit.");
+      toast.error(`Vui lòng nhập tên ${DISPLAY_LABELS.assignedUnit}.`);
       return;
     }
 
@@ -69,25 +76,37 @@ export default function AssignedUnitManagementTab({
       await onUpdateAssignedUnit({ assignedUnitId: editingId, name });
       setEditingId(null);
       setEditingName("");
-      toast.success("Đã cập nhật assigned unit.");
+      toast.success(`Đã cập nhật ${DISPLAY_LABELS.assignedUnit}.`);
     } catch (errorValue) {
-      toast.error(getApiErrorMessage(errorValue, "Không thể cập nhật assigned unit."));
+      toast.error(
+        getApiErrorMessage(
+          errorValue,
+          `Không thể cập nhật ${DISPLAY_LABELS.assignedUnit}.`,
+        ),
+      );
     }
   };
 
   const handleDelete = async (assignedUnitId) => {
     try {
       await onDeleteAssignedUnit({ assignedUnitId });
-      toast.success("Đã xóa assigned unit.");
+      toast.success(`Đã xóa ${DISPLAY_LABELS.assignedUnit}.`);
     } catch (errorValue) {
-      toast.error(getApiErrorMessage(errorValue, "Không thể xóa assigned unit."));
+      toast.error(
+        getApiErrorMessage(
+          errorValue,
+          `Không thể xóa ${DISPLAY_LABELS.assignedUnit}.`,
+        ),
+      );
     }
   };
 
   if (isLoading) {
     return (
       <Card className="surface p-6">
-        <SectionLoader label="Đang tải danh mục assignedUnit..." />
+        <SectionLoader
+          label={`Đang tải danh mục ${DISPLAY_LABELS.assignedUnit}...`}
+        />
       </Card>
     );
   }
@@ -96,7 +115,10 @@ export default function AssignedUnitManagementTab({
     return (
       <Card className="surface p-6">
         <SectionLoader
-          label={getApiErrorMessage(error, "Không tải được danh mục assignedUnit.")}
+          label={getApiErrorMessage(
+            error,
+            `Không tải được danh mục ${DISPLAY_LABELS.assignedUnit}.`,
+          )}
           textClassName="text-destructive"
         />
       </Card>
@@ -105,24 +127,41 @@ export default function AssignedUnitManagementTab({
 
   return (
     <Card className="relative surface overflow-hidden">
-      <OverlayLoader show={isFetching && !isLoading} label="Đang cập nhật danh mục assignedUnit..." />
+      <OverlayLoader
+        show={isFetching && !isLoading}
+        label={`Đang cập nhật danh mục ${DISPLAY_LABELS.assignedUnit}...`}
+      />
       <div className="border-b px-4 py-4">
         <div className="mb-3">
-          <h3 className="text-sm font-semibold">Danh mục assignedUnit của đơn vị</h3>
+          <h3 className="text-sm font-semibold">
+            Danh mục {DISPLAY_LABELS.assignedUnit} của đơn vị
+          </h3>
           <p className="text-xs text-muted-foreground">
-            Đơn vị đang quản lý: <span className="font-medium text-foreground">{selectedScopeUnitName || "-"}</span>
+            Đơn vị đang quản lý:{" "}
+            <span className="font-medium text-foreground">
+              {selectedScopeUnitName || "-"}
+            </span>
           </p>
         </div>
-        <form className="flex flex-col gap-2 md:flex-row" onSubmit={handleCreate}>
+        <form
+          className="flex flex-col gap-2 md:flex-row"
+          onSubmit={handleCreate}
+        >
           <Input
             value={newAssignedUnitName}
             onChange={(event) => setNewAssignedUnitName(event.target.value)}
-            placeholder="Nhập tên assignedUnit mới"
+            placeholder={`Nhập tên ${DISPLAY_LABELS.assignedUnit} mới`}
             className="md:max-w-md"
           />
-          <Button type="submit" disabled={isCreatingAssignedUnit} className="gap-2">
+          <Button
+            type="submit"
+            disabled={isCreatingAssignedUnit}
+            className="gap-2"
+          >
             <Plus className="h-4 w-4" />
-            {isCreatingAssignedUnit ? "Đang thêm..." : "Thêm assignedUnit"}
+            {isCreatingAssignedUnit
+              ? "Đang thêm..."
+              : `Thêm ${DISPLAY_LABELS.assignedUnit}`}
           </Button>
         </form>
       </div>
@@ -132,7 +171,7 @@ export default function AssignedUnitManagementTab({
           <thead>
             <tr>
               <th>ID</th>
-              <th>Tên assignedUnit</th>
+              <th>Tên {DISPLAY_LABELS.assignedUnit}</th>
               <th>Đơn vị</th>
               <th>Cập nhật</th>
               <th>Thao tác</th>
@@ -141,8 +180,11 @@ export default function AssignedUnitManagementTab({
           <tbody>
             {assignedUnits.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-8 text-center text-muted-foreground">
-                  Chưa có assignedUnit nào cho đơn vị này.
+                <td
+                  colSpan={5}
+                  className="py-8 text-center text-muted-foreground"
+                >
+                  Chưa có {DISPLAY_LABELS.assignedUnit} nào cho đơn vị này.
                 </td>
               </tr>
             ) : (
@@ -155,8 +197,10 @@ export default function AssignedUnitManagementTab({
                       {isEditing ? (
                         <Input
                           value={editingName}
-                          onChange={(event) => setEditingName(event.target.value)}
-                          placeholder="Nhập tên assignedUnit"
+                          onChange={(event) =>
+                            setEditingName(event.target.value)
+                          }
+                          placeholder={`Nhập tên ${DISPLAY_LABELS.assignedUnit}`}
                           className="max-w-sm"
                         />
                       ) : (
@@ -164,7 +208,11 @@ export default function AssignedUnitManagementTab({
                       )}
                     </td>
                     <td>{item.unit?.name || selectedScopeUnitName || "-"}</td>
-                    <td>{item.updatedAt ? new Date(item.updatedAt).toLocaleString("vi-VN") : "-"}</td>
+                    <td>
+                      {item.updatedAt
+                        ? new Date(item.updatedAt).toLocaleString("vi-VN")
+                        : "-"}
+                    </td>
                     <td>
                       <div className="flex flex-wrap gap-2">
                         {isEditing ? (

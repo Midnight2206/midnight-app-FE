@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { DISPLAY_LABELS } from "@/utils/constants";
 
 const MILITARY_RANK_OPTIONS = [
   { code: "THIEU_UY", label: "Thiếu úy" },
@@ -39,10 +40,12 @@ export default function ExternalIncreaseForm({
   return (
     <div className="border-b bg-muted/20 px-4 py-4">
       <div className="mb-3">
-        <h4 className="text-sm font-semibold">Tiếp nhận quân nhân từ ngoài hệ thống</h4>
+        <h4 className="text-sm font-semibold">
+          Tiếp nhận quân nhân từ ngoài hệ thống
+        </h4>
         <p className="text-xs text-muted-foreground">
-          Dùng form này khi quân nhân chuyển đến từ đơn vị chưa có trong hệ thống, không thông qua
-          yêu cầu transfer nội bộ.
+          Dùng form này khi quân nhân chuyển đến từ đơn vị chưa có trong hệ
+          thống, không thông qua yêu cầu điều chuyển nội bộ.
         </p>
       </div>
 
@@ -106,13 +109,15 @@ export default function ExternalIncreaseForm({
           </select>
         </div>
         <div className="space-y-1">
-          <p className="text-xs text-muted-foreground">Assigned unit tiếp nhận</p>
+          <p className="text-xs text-muted-foreground">
+            {DISPLAY_LABELS.assignedUnitTitle} tiếp nhận
+          </p>
           <select
             value={form.assignedUnitId}
             onChange={(e) => onFieldChange("assignedUnitId", e.target.value)}
             className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm"
           >
-            <option value="">Chọn assigned unit</option>
+            <option value="">Chọn {DISPLAY_LABELS.assignedUnit}</option>
             {assignedUnitOptions.map((item) => (
               <option key={item.id} value={String(item.id)}>
                 {item.name}
@@ -127,7 +132,9 @@ export default function ExternalIncreaseForm({
             min={1900}
             max={2100}
             value={String(form.initialCommissioningYear)}
-            onChange={(e) => onFieldChange("initialCommissioningYear", e.target.value)}
+            onChange={(e) =>
+              onFieldChange("initialCommissioningYear", e.target.value)
+            }
           />
         </div>
         <div className="space-y-1">
@@ -142,7 +149,9 @@ export default function ExternalIncreaseForm({
           <p className="text-xs text-muted-foreground">Nguồn chuyển đến</p>
           <Input
             value={form.fromExternalUnitName}
-            onChange={(e) => onFieldChange("fromExternalUnitName", e.target.value)}
+            onChange={(e) =>
+              onFieldChange("fromExternalUnitName", e.target.value)
+            }
             placeholder="Ví dụ: Ban CHQS huyện chưa có trên hệ thống"
           />
         </div>

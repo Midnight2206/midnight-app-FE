@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SectionLoader } from "@/components/AppLoading";
+import { DISPLAY_LABELS } from "@/utils/constants";
 
 export default function UserRoleCard({
   userList,
@@ -35,16 +36,20 @@ export default function UserRoleCard({
         {selectedUser && (
           <>
             {isFetchingUsers && (
-              <SectionLoader label="Đang cập nhật thông tin user..." className="mb-2" />
+              <SectionLoader
+                label="Đang cập nhật thông tin người dùng..."
+                className="mb-2"
+              />
             )}
             <p className="text-sm text-muted-foreground">
-              User: {selectedUser.username} - Unit: {selectedUser.unit?.name || "-"}
+              {DISPLAY_LABELS.username}: {selectedUser.username} -{" "}
+              {DISPLAY_LABELS.unit}: {selectedUser.unit?.name || "-"}
             </p>
             <p className="text-sm text-muted-foreground">
               Quân nhân:{" "}
               {selectedUser.military
                 ? `${selectedUser.military.fullname} (${selectedUser.military.militaryCode})`
-                : "Chưa claim quân nhân"}
+                : "Chưa liên kết quân nhân"}
             </p>
 
             <select

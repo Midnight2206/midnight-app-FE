@@ -11,7 +11,6 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Home from "@/pages/Home";
 import Register from "@/pages/Register";
 import Login from "@/pages/Login";
-import Post from "@/pages/Post";
 import NotFound from "@/pages/NotFound";
 
 import {
@@ -22,6 +21,7 @@ import {
 
 const Category = lazy(() => import("@/pages/Category"));
 const MilitaryPage = lazy(() => import("@/pages/Military"));
+const MilitaryPersonalLedgerPage = lazy(() => import("@/pages/MilitaryPersonalLedger"));
 const AdminCreatePage = lazy(() => import("@/pages/AdminCreate"));
 const AccountManagementPage = lazy(() => import("@/pages/AccountManagement"));
 const AccountAuditPage = lazy(() => import("@/pages/AccountAudit"));
@@ -84,6 +84,16 @@ const guardedFeatureRoutes = [
     accessRule: ACCESS_RULES.militaryPage,
   },
   {
+    path: "/militaries/me/personal-ledger",
+    element: <MilitaryPersonalLedgerPage />,
+    accessRule: ACCESS_RULES.personalLedgerSelfPage,
+  },
+  {
+    path: "/militaries/:militaryId/personal-ledger",
+    element: <MilitaryPersonalLedgerPage />,
+    accessRule: ACCESS_RULES.personalLedgerAdminPage,
+  },
+  {
     path: "/inventories",
     element: <InventoryPage />,
     accessRule: ACCESS_RULES.inventoryPage,
@@ -140,7 +150,6 @@ export default function AppRouter() {
 
           <Route element={<ProtectedRoute />}>
             <Route element={<MainLayout />}>
-              <Route path="/posts" element={<Post />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/dashboard" element={<DashboardLandingRedirect />} />

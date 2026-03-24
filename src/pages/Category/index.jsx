@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getApiErrorMessage } from "@/utils/apiError";
 import CategoryModal from "@/pages/Category/CategoryModal";
+import AllocationModesTab from "@/pages/Inventory/components/AllocationModesTab";
+import ServiceLifeEditorTab from "@/pages/Inventory/components/ServiceLifeEditorTab";
 import {
   useCreateColorMutation,
   useCreateCategoryMutation,
@@ -21,9 +23,16 @@ import {
   useUpdateCategoryMutation,
   useGetVersionsQuery,
 } from "@/features/category/categoryApi";
+import { useGetMilitaryTypesQuery } from "@/features/military/militaryApi";
 
 function normalizeIdList(rawList = []) {
-  return [...new Set(rawList.map((item) => Number.parseInt(item, 10)).filter((id) => Number.isInteger(id) && id > 0))];
+  return [
+    ...new Set(
+      rawList
+        .map((item) => Number.parseInt(item, 10))
+        .filter((id) => Number.isInteger(id) && id > 0),
+    ),
+  ];
 }
 
 function withFallbackNone(ids, fallbackId) {
@@ -40,9 +49,15 @@ export default function CategoryPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
 
-  const { data: catalogData, isLoading: isLoadingCatalog } = useGetCategoryCatalogOptionsQuery();
-  const { data: versionsData, refetch: refetchVersions } = useGetVersionsQuery({ status: "active" });
-  const { data: colorsData, refetch: refetchColors } = useGetColorsQuery({ status: "active" });
+  const { data: catalogData, isLoading: isLoadingCatalog } =
+    useGetCategoryCatalogOptionsQuery();
+  const { data: militaryTypesData } = useGetMilitaryTypesQuery();
+  const { data: versionsData, refetch: refetchVersions } = useGetVersionsQuery({
+    status: "active",
+  });
+  const { data: colorsData, refetch: refetchColors } = useGetColorsQuery({
+    status: "active",
+  });
 
   const {
     data: categoryData,
@@ -54,16 +69,27 @@ export default function CategoryPage() {
     sortBy: "createdAt",
     order: "desc",
   });
+  const { data: serviceLifeCategoryData } = useGetCategoriesQuery({
+    status: "active",
+    sortBy: "name",
+    order: "asc",
+  });
 
   const [createCategory] = useCreateCategoryMutation();
   const [updateCategory] = useUpdateCategoryMutation();
-  const [deleteCategory, { isLoading: isDeletingCategory }] = useDeleteCategoryMutation();
-  const [restoreCategory, { isLoading: isRestoringCategory }] = useRestoreCategoryMutation();
+  const [deleteCategory, { isLoading: isDeletingCategory }] =
+    useDeleteCategoryMutation();
+  const [restoreCategory, { isLoading: isRestoringCategory }] =
+    useRestoreCategoryMutation();
 
-  const [createVersion, { isLoading: isCreatingVersion }] = useCreateVersionMutation();
-  const [deleteVersion, { isLoading: isDeletingVersion }] = useDeleteVersionMutation();
-  const [createColor, { isLoading: isCreatingColor }] = useCreateColorMutation();
-  const [deleteColor, { isLoading: isDeletingColor }] = useDeleteColorMutation();
+  const [createVersion, { isLoading: isCreatingVersion }] =
+    useCreateVersionMutation();
+  const [deleteVersion, { isLoading: isDeletingVersion }] =
+    useDeleteVersionMutation();
+  const [createColor, { isLoading: isCreatingColor }] =
+    useCreateColorMutation();
+  const [deleteColor, { isLoading: isDeletingColor }] =
+    useDeleteColorMutation();
 
   const unitOfMeasures = catalogData?.unitOfMeasures || [];
   const versions = useMemo(
@@ -75,13 +101,20 @@ export default function CategoryPage() {
     [colorsData, catalogData],
   );
   const categories = categoryData?.categories || [];
+  const serviceLifeCategories = serviceLifeCategoryData?.categories || [];
+  const militaryTypes =
+    militaryTypesData?.types || militaryTypesData?.militaryTypes || [];
 
   const defaultVersionId = useMemo(
-    () => versions.find((item) => String(item.name || "").toLowerCase() === "none")?.id,
+    () =>
+      versions.find((item) => String(item.name || "").toLowerCase() === "none")
+        ?.id,
     [versions],
   );
   const defaultColorId = useMemo(
-    () => colors.find((item) => String(item.name || "").toLowerCase() === "none")?.id,
+    () =>
+      colors.find((item) => String(item.name || "").toLowerCase() === "none")
+        ?.id,
     [colors],
   );
 
@@ -129,41 +162,44 @@ export default function CategoryPage() {
       };
 
       if (editingCategory?.id) {
-        await updateCategory({ id: editingCategory.id, data: requestData }).unwrap();
-        toast.success("Đã cập nhật category.");
+        await updateCategory({
+          id: editingCategory.id,
+          data: requestData,
+        }).unwrap();
+        toast.success("Đã cập nhật danh mục.");
       } else {
         await createCategory(requestData).unwrap();
-        toast.success("Đã tạo category.");
+        toast.success("Đã tạo danh mục.");
       }
 
       setModalOpen(false);
       setEditingCategory(null);
       refetchCategories();
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Không thể lưu category."));
+      toast.error(getApiErrorMessage(error, "Không thể lưu danh mục."));
       throw error;
     }
   };
 
   const handleDeleteCategory = async (id) => {
-    if (!window.confirm("Bạn chắc chắn muốn xoá category này?")) return;
+    if (!window.confirm("Bạn chắc chắn muốn xoá danh mục này?")) return;
 
     try {
       await deleteCategory(id).unwrap();
-      toast.success("Đã xoá category.");
+      toast.success("Đã xoá danh mục.");
       refetchCategories();
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Không thể xoá category."));
+      toast.error(getApiErrorMessage(error, "Không thể xoá danh mục."));
     }
   };
 
   const handleRestoreCategory = async (id) => {
     try {
       await restoreCategory(id).unwrap();
-      toast.success("Đã khôi phục category.");
+      toast.success("Đã khôi phục danh mục.");
       refetchCategories();
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Không thể khôi phục category."));
+      toast.error(getApiErrorMessage(error, "Không thể khôi phục danh mục."));
     }
   };
 
@@ -174,22 +210,22 @@ export default function CategoryPage() {
     try {
       await createVersion({ name: versionName.trim() }).unwrap();
       setVersionName("");
-      toast.success("Đã thêm version.");
+      toast.success("Đã thêm phiên bản.");
       refetchVersions();
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Không thể thêm version."));
+      toast.error(getApiErrorMessage(error, "Không thể thêm phiên bản."));
     }
   };
 
   const handleDeleteVersion = async (id) => {
-    if (!window.confirm("Xoá version này?")) return;
+    if (!window.confirm("Xoá phiên bản này?")) return;
 
     try {
       await deleteVersion(id).unwrap();
-      toast.success("Đã xoá version.");
+      toast.success("Đã xoá phiên bản.");
       refetchVersions();
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Không thể xoá version."));
+      toast.error(getApiErrorMessage(error, "Không thể xoá phiên bản."));
     }
   };
 
@@ -200,29 +236,31 @@ export default function CategoryPage() {
     try {
       await createColor({ name: colorName.trim() }).unwrap();
       setColorName("");
-      toast.success("Đã thêm color.");
+      toast.success("Đã thêm màu sắc.");
       refetchColors();
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Không thể thêm color."));
+      toast.error(getApiErrorMessage(error, "Không thể thêm màu sắc."));
     }
   };
 
   const handleDeleteColor = async (id) => {
-    if (!window.confirm("Xoá color này?")) return;
+    if (!window.confirm("Xoá màu sắc này?")) return;
 
     try {
       await deleteColor(id).unwrap();
-      toast.success("Đã xoá color.");
+      toast.success("Đã xoá màu sắc.");
       refetchColors();
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Không thể xoá color."));
+      toast.error(getApiErrorMessage(error, "Không thể xoá màu sắc."));
     }
   };
 
   if (isLoadingCatalog) {
     return (
       <div className="p-6">
-        <Card className="p-4 text-sm text-muted-foreground">Đang tải dữ liệu category...</Card>
+        <Card className="p-4 text-sm text-muted-foreground">
+          Đang tải dữ liệu danh mục...
+        </Card>
       </div>
     );
   }
@@ -232,9 +270,11 @@ export default function CategoryPage() {
       <Tabs defaultValue="categories" className="space-y-4">
         <div className="-mx-1 overflow-x-auto px-1 pb-1">
           <TabsList className="inline-flex min-w-max">
-            <TabsTrigger value="categories">Category</TabsTrigger>
+            <TabsTrigger value="categories">Danh mục quân trang</TabsTrigger>
             <TabsTrigger value="versions">Phiên bản</TabsTrigger>
             <TabsTrigger value="colors">Màu sắc</TabsTrigger>
+            <TabsTrigger value="service-life">Niên hạn quân trang</TabsTrigger>
+            <TabsTrigger value="allocation-modes">Chế độ cấp phát</TabsTrigger>
           </TabsList>
         </div>
 
@@ -258,14 +298,20 @@ export default function CategoryPage() {
                   <option value="deleted">Đã xoá</option>
                   <option value="all">Tất cả</option>
                 </select>
-                <Button type="button" onClick={openCreateModal} className="w-full sm:w-auto">
-                  Thêm category
+                <Button
+                  type="button"
+                  onClick={openCreateModal}
+                  className="w-full sm:w-auto"
+                >
+                  Thêm danh mục
                 </Button>
               </div>
             </div>
 
             {isLoadingCategories ? (
-              <div className="text-sm text-muted-foreground">Đang tải danh sách category...</div>
+              <div className="text-sm text-muted-foreground">
+                Đang tải danh sách danh mục...
+              </div>
             ) : (
               <div className="overflow-auto rounded-md border">
                 <table className="w-full text-sm">
@@ -273,7 +319,7 @@ export default function CategoryPage() {
                     <tr className="text-left border-b">
                       <th className="py-2 px-3">Tên</th>
                       <th className="py-2 px-3">Mã</th>
-                      <th className="py-2 px-3">Sizes</th>
+                      <th className="py-2 px-3">Cỡ số</th>
                       <th className="py-2 px-3">ĐVT</th>
                       <th className="py-2 px-3">Phiên bản</th>
                       <th className="py-2 px-3">Màu sắc</th>
@@ -284,28 +330,47 @@ export default function CategoryPage() {
                   </thead>
                   <tbody>
                     {categories.map((category) => (
-                      <tr key={category.id} className="border-b last:border-0 align-top">
+                      <tr
+                        key={category.id}
+                        className="border-b last:border-0 align-top"
+                      >
                         <td className="py-2 px-3">{category.name}</td>
                         <td className="py-2 px-3">{category.code || "-"}</td>
                         <td className="py-2 px-3">
-                          {(category.sizes || []).map((item) => item.name).join(", ") || "ONESIZE"}
+                          {(category.sizes || [])
+                            .map((item) => item.name)
+                            .join(", ") || "Một cỡ"}
                         </td>
-                        <td className="py-2 px-3">{category.unitOfMeasure?.name || "-"}</td>
                         <td className="py-2 px-3">
-                          {(category.versions || []).map((item) => item.name).join(", ") ||
+                          {category.unitOfMeasure?.name || "-"}
+                        </td>
+                        <td className="py-2 px-3">
+                          {(category.versions || [])
+                            .map((item) => item.name)
+                            .join(", ") ||
                             category.version?.name ||
-                            "none"}
+                            "Mặc định"}
                         </td>
                         <td className="py-2 px-3">
-                          {(category.colors || []).map((item) => item.name).join(", ") ||
+                          {(category.colors || [])
+                            .map((item) => item.name)
+                            .join(", ") ||
                             category.color?.name ||
-                            "none"}
+                            "Mặc định"}
                         </td>
-                        <td className="py-2 px-3">{category.totalQuantity ?? 0}</td>
-                        <td className="py-2 px-3">{category.deletedAt ? "Đã xoá" : "Hoạt động"}</td>
+                        <td className="py-2 px-3">
+                          {category.totalQuantity ?? 0}
+                        </td>
+                        <td className="py-2 px-3">
+                          {category.deletedAt ? "Đã xoá" : "Hoạt động"}
+                        </td>
                         <td className="py-2 px-3">
                           <div className="flex items-center gap-2">
-                            <Button type="button" size="sm" onClick={() => openEditModal(category)}>
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={() => openEditModal(category)}
+                            >
                               Sửa
                             </Button>
                             {category.deletedAt ? (
@@ -313,7 +378,9 @@ export default function CategoryPage() {
                                 type="button"
                                 size="sm"
                                 variant="outline"
-                                onClick={() => handleRestoreCategory(category.id)}
+                                onClick={() =>
+                                  handleRestoreCategory(category.id)
+                                }
                                 disabled={isRestoringCategory}
                               >
                                 Khôi phục
@@ -323,7 +390,9 @@ export default function CategoryPage() {
                                 type="button"
                                 size="sm"
                                 variant="destructive"
-                                onClick={() => handleDeleteCategory(category.id)}
+                                onClick={() =>
+                                  handleDeleteCategory(category.id)
+                                }
                                 disabled={isDeletingCategory}
                               >
                                 Xoá
@@ -335,8 +404,11 @@ export default function CategoryPage() {
                     ))}
                     {!categories.length ? (
                       <tr>
-                        <td colSpan={9} className="py-4 text-center text-muted-foreground">
-                          Chưa có category.
+                        <td
+                          colSpan={9}
+                          className="py-4 text-center text-muted-foreground"
+                        >
+                          Chưa có danh mục nào.
                         </td>
                       </tr>
                     ) : null}
@@ -347,16 +419,37 @@ export default function CategoryPage() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="service-life">
+          <ServiceLifeEditorTab
+            militaryTypes={militaryTypes}
+            categories={serviceLifeCategories}
+          />
+        </TabsContent>
+
+        <TabsContent value="allocation-modes">
+          <AllocationModesTab
+            categories={serviceLifeCategories}
+            militaryTypes={militaryTypes}
+          />
+        </TabsContent>
+
         <TabsContent value="versions">
           <Card className="p-4 space-y-3">
             <h2 className="font-semibold">Phiên bản</h2>
-            <form onSubmit={handleCreateVersion} className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <form
+              onSubmit={handleCreateVersion}
+              className="flex flex-col gap-2 sm:flex-row sm:items-center"
+            >
               <Input
                 value={versionName}
                 onChange={(event) => setVersionName(event.target.value)}
                 placeholder="Tên phiên bản"
               />
-              <Button type="submit" disabled={isCreatingVersion} className="w-full sm:w-auto">
+              <Button
+                type="submit"
+                disabled={isCreatingVersion}
+                className="w-full sm:w-auto"
+              >
                 {isCreatingVersion ? "Đang thêm..." : "Thêm"}
               </Button>
             </form>
@@ -372,7 +465,10 @@ export default function CategoryPage() {
                     variant="destructive"
                     size="sm"
                     onClick={() => handleDeleteVersion(version.id)}
-                    disabled={isDeletingVersion || String(version.name || "").toLowerCase() === "none"}
+                    disabled={
+                      isDeletingVersion ||
+                      String(version.name || "").toLowerCase() === "none"
+                    }
                   >
                     Xoá
                   </Button>
@@ -385,26 +481,39 @@ export default function CategoryPage() {
         <TabsContent value="colors">
           <Card className="p-4 space-y-3">
             <h2 className="font-semibold">Màu sắc</h2>
-            <form onSubmit={handleCreateColor} className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <form
+              onSubmit={handleCreateColor}
+              className="flex flex-col gap-2 sm:flex-row sm:items-center"
+            >
               <Input
                 value={colorName}
                 onChange={(event) => setColorName(event.target.value)}
                 placeholder="Tên màu sắc"
               />
-              <Button type="submit" disabled={isCreatingColor} className="w-full sm:w-auto">
+              <Button
+                type="submit"
+                disabled={isCreatingColor}
+                className="w-full sm:w-auto"
+              >
                 {isCreatingColor ? "Đang thêm..." : "Thêm"}
               </Button>
             </form>
             <div className="flex flex-wrap gap-2">
               {colors.map((color) => (
-                <div key={color.id} className="rounded-md border px-2 py-1 text-sm flex items-center gap-2">
+                <div
+                  key={color.id}
+                  className="rounded-md border px-2 py-1 text-sm flex items-center gap-2"
+                >
                   <span>{color.name}</span>
                   <Button
                     type="button"
                     variant="destructive"
                     size="sm"
                     onClick={() => handleDeleteColor(color.id)}
-                    disabled={isDeletingColor || String(color.name || "").toLowerCase() === "none"}
+                    disabled={
+                      isDeletingColor ||
+                      String(color.name || "").toLowerCase() === "none"
+                    }
                   >
                     Xoá
                   </Button>

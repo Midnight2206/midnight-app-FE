@@ -1,6 +1,5 @@
 import {
   Package,
-  Truck,
   User,
   Shield,
   Settings,
@@ -10,17 +9,18 @@ import { ACCESS_RULES } from "@/features/auth/authorization";
 
 export const userQuickActions = [
   {
-    key: "my-orders",
-    icon: <Package className="h-4 w-4" />,
-    title: "Đơn hàng của tôi",
-    desc: "Xem các đơn hàng liên quan",
-    to: "/posts",
+    key: "personal-ledger",
+    icon: <Shield className="h-4 w-4" />,
+    title: "Sổ quân trang cá nhân",
+    desc: "Xem tiêu chuẩn, chế độ và lịch sử cấp phát",
+    to: "/militaries/me/personal-ledger",
+    accessRule: ACCESS_RULES.personalLedgerSelfPage,
   },
   {
     key: "transport",
-    icon: <Truck className="h-4 w-4" />,
-    title: "Theo dõi vận chuyển",
-    desc: "Kiểm tra trạng thái giao hàng",
+    icon: <Package className="h-4 w-4" />,
+    title: "Danh mục quân trang",
+    desc: "Tra cứu quân trang và nhóm mặt hàng",
     to: "/categories",
   },
   {

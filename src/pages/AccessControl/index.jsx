@@ -20,7 +20,11 @@ import AccessSyncCard from "./components/AccessSyncCard";
 import CreateRoleCard from "./components/CreateRoleCard";
 import RolePermissionCard from "./components/RolePermissionCard";
 import UserRoleCard from "./components/UserRoleCard";
-import { getPermissionModule, isSameStringArray, normalizeCodes } from "./utils";
+import {
+  getPermissionModule,
+  isSameStringArray,
+  normalizeCodes,
+} from "./utils";
 
 export default function AccessControlPage() {
   const { can } = useAuthorization();
@@ -51,12 +55,9 @@ export default function AccessControlPage() {
     refetch: refetchPermissions,
     isLoading: isLoadingPermissions,
     isFetching: isFetchingPermissions,
-  } = useGetAccessPermissionsQuery(
-    undefined,
-    {
-      skip: !canAccessControl,
-    },
-  );
+  } = useGetAccessPermissionsQuery(undefined, {
+    skip: !canAccessControl,
+  });
   const {
     data: usersData,
     refetch: refetchUsers,
@@ -68,17 +69,22 @@ export default function AccessControlPage() {
 
   const [syncPermissions, { isLoading: isSyncingPermissions }] =
     useSyncAccessPermissionsMutation();
-  const [createRole, { isLoading: isCreatingRole }] = useCreateAccessRoleMutation();
+  const [createRole, { isLoading: isCreatingRole }] =
+    useCreateAccessRoleMutation();
   const [updateRolePermissions, { isLoading: isSavingRolePermissions }] =
     useUpdateRolePermissionsMutation();
-  const [updateUserRole, { isLoading: isSavingUserRole }] = useUpdateUserRoleMutation();
+  const [updateUserRole, { isLoading: isSavingUserRole }] =
+    useUpdateUserRoleMutation();
 
   const roleList = useMemo(
     () => (Array.isArray(rolesData?.roles) ? rolesData.roles : []),
     [rolesData],
   );
   const permissionList = useMemo(
-    () => (Array.isArray(permissionsData?.permissions) ? permissionsData.permissions : []),
+    () =>
+      Array.isArray(permissionsData?.permissions)
+        ? permissionsData.permissions
+        : [],
     [permissionsData],
   );
   const userList = useMemo(
@@ -86,7 +92,9 @@ export default function AccessControlPage() {
     [usersData],
   );
 
-  const selectedRole = roleList.find((role) => String(role.id) === String(selectedRoleId));
+  const selectedRole = roleList.find(
+    (role) => String(role.id) === String(selectedRoleId),
+  );
   const selectedUser = userList.find((user) => user.id === selectedUserId);
 
   const rolePermissionDirty = useMemo(() => {
@@ -99,7 +107,13 @@ export default function AccessControlPage() {
   const userRoleDirty = selectedUserRoleName !== initialUserRoleName;
 
   const moduleOptions = useMemo(() => {
-    const modules = [...new Set(permissionList.map((permission) => getPermissionModule(permission.code)))];
+    const modules = [
+      ...new Set(
+        permissionList.map((permission) =>
+          getPermissionModule(permission.code),
+        ),
+      ),
+    ];
     return ["ALL", ...modules.sort()];
   }, [permissionList]);
 
@@ -108,7 +122,8 @@ export default function AccessControlPage() {
 
     return permissionList.filter((permission) => {
       const module = getPermissionModule(permission.code);
-      const inModule = permissionModule === "ALL" || module === permissionModule;
+      const inModule =
+        permissionModule === "ALL" || module === permissionModule;
       if (!inModule) return false;
 
       if (!keyword) return true;
@@ -120,10 +135,14 @@ export default function AccessControlPage() {
     });
   }, [permissionList, permissionKeyword, permissionModule]);
 
-  const visiblePermissionCodes = filteredPermissionList.map((permission) => permission.code);
+  const visiblePermissionCodes = filteredPermissionList.map(
+    (permission) => permission.code,
+  );
 
-  const isBootstrappingAccess = isLoadingRoles || isLoadingPermissions || isLoadingUsers;
-  const isRefreshingAccess = isFetchingRoles || isFetchingPermissions || isFetchingUsers;
+  const isBootstrappingAccess =
+    isLoadingRoles || isLoadingPermissions || isLoadingUsers;
+  const isRefreshingAccess =
+    isFetchingRoles || isFetchingPermissions || isFetchingUsers;
 
   const handleSyncPermissions = async () => {
     try {
@@ -169,17 +188,23 @@ export default function AccessControlPage() {
 
   const togglePermissionCode = (code) => {
     setSelectedPermissionCodes((prev) =>
-      prev.includes(code) ? prev.filter((item) => item !== code) : [...prev, code],
+      prev.includes(code)
+        ? prev.filter((item) => item !== code)
+        : [...prev, code],
     );
   };
 
   const selectAllVisiblePermissions = () => {
-    setSelectedPermissionCodes((prev) => normalizeCodes([...prev, ...visiblePermissionCodes]));
+    setSelectedPermissionCodes((prev) =>
+      normalizeCodes([...prev, ...visiblePermissionCodes]),
+    );
   };
 
   const clearAllVisiblePermissions = () => {
     const visibleSet = new Set(visiblePermissionCodes);
-    setSelectedPermissionCodes((prev) => prev.filter((code) => !visibleSet.has(code)));
+    setSelectedPermissionCodes((prev) =>
+      prev.filter((code) => !visibleSet.has(code)),
+    );
   };
 
   const handleSubmitRolePermissions = async (e) => {
@@ -222,17 +247,17 @@ export default function AccessControlPage() {
     e.preventDefault();
 
     if (!selectedUserId) {
-      toast.error("Vui lòng chọn user.");
+      toast.error("Vui lòng chọn người dùng.");
       return;
     }
 
     if (!selectedUserRoleName) {
-      toast.error("User phải có 1 role.");
+      toast.error("Người dùng phải có ít nhất 1 vai trò.");
       return;
     }
 
     if (!userRoleDirty) {
-      toast.info("Role của user chưa thay đổi.");
+      toast.info("Vai trò của người dùng chưa thay đổi.");
       return;
     }
 
@@ -274,8 +299,14 @@ export default function AccessControlPage() {
       description="Đồng bộ permission, tạo role mới và phân vai trò cho người dùng ngay trong dashboard."
       className="relative space-y-4 p-4 md:p-6"
     >
-      <OverlayLoader show={isRefreshingAccess && !isBootstrappingAccess} label="Đang cập nhật dữ liệu phân quyền..." />
-      <AccessSyncCard onSync={handleSyncPermissions} isSyncingPermissions={isSyncingPermissions} />
+      <OverlayLoader
+        show={isRefreshingAccess && !isBootstrappingAccess}
+        label="Đang cập nhật dữ liệu phân quyền..."
+      />
+      <AccessSyncCard
+        onSync={handleSyncPermissions}
+        isSyncingPermissions={isSyncingPermissions}
+      />
       <CreateRoleCard
         newRole={newRole}
         setNewRole={setNewRole}

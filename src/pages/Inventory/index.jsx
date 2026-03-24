@@ -1,524 +1,86 @@
-import { useMemo, useState } from "react";
-import { toast } from "sonner";
+import { useState } from "react";
 
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { getApiErrorMessage } from "@/utils/apiError";
-import {
-  useCreateCategoryWarehouseMutation,
-  useGetCategoryWarehousesQuery,
-  useGetWarehouseCategoryItemsQuery,
-  useAdjustWarehouseCategoryStockMutation,
-  useTransferWarehouseCategoryStockMutation,
-  useUpdateCategoryWarehouseMutation,
-} from "@/features/inventory/inventoryApi";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGetCategoriesQuery } from "@/features/category/categoryApi";
-import WarehouseModal from "@/pages/Inventory/WarehouseModal";
+import AllocationIssueTab from "@/pages/Inventory/components/AllocationIssueTab";
+import IssueHistoryTab from "@/pages/Inventory/components/IssueHistoryTab";
+import OtherIssueTab from "@/pages/Inventory/components/OtherIssueTab";
+import WarehouseManagementTab from "@/pages/Inventory/components/WarehouseManagementTab";
+import { DISPLAY_LABELS } from "@/utils/constants";
 
-const INVENTORY_SELECTED_WAREHOUSE_KEY = "inventory_selected_warehouse_id";
-
-function normalizeCategoryIds(rawIds = []) {
-  return [
-    ...new Set(
-      rawIds
-        .map((id) => Number.parseInt(id, 10))
-        .filter((id) => Number.isInteger(id) && id > 0),
-    ),
-  ];
-}
-
-function TransferStockModal({
-  open,
-  onOpenChange,
-  sourceWarehouse,
-  warehouses,
-  item,
-  onSubmit,
-  isSubmitting,
-}) {
-  const [toWarehouseId, setToWarehouseId] = useState("");
-  const [quantity, setQuantity] = useState("");
-  const [note, setNote] = useState("");
-
-  const targetOptions = useMemo(
-    () => warehouses.filter((warehouse) => warehouse.id !== sourceWarehouse?.id),
-    [warehouses, sourceWarehouse],
-  );
-
-  const handleClose = () => {
-    if (isSubmitting) return;
-    setToWarehouseId("");
-    setQuantity("");
-    setNote("");
-    onOpenChange(false);
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const parsedTarget = Number.parseInt(toWarehouseId, 10);
-    const parsedQty = Number.parseInt(quantity, 10);
-    if (!Number.isInteger(parsedTarget) || parsedTarget <= 0) return;
-    if (!Number.isInteger(parsedQty) || parsedQty <= 0) return;
-    await onSubmit({
-      toWarehouseId: parsedTarget,
-      quantity: parsedQty,
-      note: note.trim() || undefined,
-    });
-    handleClose();
-  };
-
+function InventoryWorkspaceHero() {
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg" showCloseButton={false}>
-        <DialogHeader>
-          <DialogTitle>Luân chuyển hàng hoá</DialogTitle>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1 text-sm">
-            <div>Nguồn: {sourceWarehouse?.name || "-"}</div>
-            <div>Mặt hàng: {item?.category?.name || "-"}</div>
-            <div>
-              Phiên bản/Màu: {item?.version?.name || "-"} / {item?.color?.name || "-"}
-            </div>
-            <div>Tồn kho nguồn: {item?.quantity ?? 0}</div>
-          </div>
-
-          <select
-            className="h-9 w-full rounded-md border bg-background px-3 text-sm"
-            value={toWarehouseId}
-            onChange={(event) => setToWarehouseId(event.target.value)}
-            disabled={isSubmitting}
-          >
-            <option value="">Chọn kho đích</option>
-            {targetOptions.map((warehouse) => (
-              <option key={warehouse.id} value={warehouse.id}>
-                {warehouse.name}
-              </option>
-            ))}
-          </select>
-
-          <Input
-            type="number"
-            min={1}
-            value={quantity}
-            onChange={(event) => setQuantity(event.target.value)}
-            placeholder="Số lượng chuyển"
-            disabled={isSubmitting}
-          />
-
-          <Input
-            value={note}
-            onChange={(event) => setNote(event.target.value)}
-            placeholder="Ghi chú (tuỳ chọn)"
-            disabled={isSubmitting}
-          />
-
-          <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={isSubmitting}
-              className="w-full sm:w-auto"
-            >
-              Huỷ
-            </Button>
-            <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
-              Xác nhận chuyển
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <Card className="overflow-hidden border-primary/10 bg-gradient-to-r from-primary/[0.08] via-background to-background shadow-sm">
+      <div className="space-y-2 p-4 sm:p-5">
+        <div className="text-xs font-medium uppercase tracking-[0.2em] text-primary/70">
+          {DISPLAY_LABELS.inventoryWorkspace}
+        </div>
+        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+          Quản lý kho và cấp phát quân trang
+        </h1>
+        <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+          Màn hình này tập trung vào nghiệp vụ kho quân trang, cấp phát theo chế
+          độ mới và tra cứu lại phiếu xuất kho đã tạo. Phần niên hạn quân trang
+          đã được chuyển sang khu vực Danh mục.
+        </p>
+      </div>
+    </Card>
   );
 }
 
-function AdjustStockModal({
-  open,
-  onOpenChange,
-  sourceWarehouse,
-  item,
-  onSubmit,
-  isSubmitting,
-}) {
-  const [delta, setDelta] = useState("");
-
-  const handleClose = () => {
-    if (isSubmitting) return;
-    setDelta("");
-    onOpenChange(false);
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const parsedDelta = Number.parseInt(delta, 10);
-    if (!Number.isInteger(parsedDelta) || parsedDelta === 0) return;
-    await onSubmit({ delta: parsedDelta });
-    handleClose();
-  };
-
+function InventoryTabsHeader() {
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg" showCloseButton={false}>
-        <DialogHeader>
-          <DialogTitle>Điều chỉnh tồn kho</DialogTitle>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1 text-sm">
-            <div>Kho: {sourceWarehouse?.name || "-"}</div>
-            <div>Mặt hàng: {item?.category?.name || "-"}</div>
-            <div>
-              Phiên bản/Màu: {item?.version?.name || "-"} / {item?.color?.name || "-"}
-            </div>
-            <div>Tồn kho hiện tại: {item?.quantity ?? 0}</div>
-          </div>
-
-          <Input
-            type="number"
-            value={delta}
-            onChange={(event) => setDelta(event.target.value)}
-            placeholder="Nhập +số để tăng, -số để giảm"
-            disabled={isSubmitting}
-          />
-
-          <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={isSubmitting}
-              className="w-full sm:w-auto"
-            >
-              Huỷ
-            </Button>
-            <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
-              Xác nhận
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <Card className="overflow-hidden border-primary/10 bg-gradient-to-r from-background via-background to-primary/5 p-2 shadow-sm">
+      <div className="-mx-1 overflow-x-auto px-1 pb-1">
+        <TabsList className="inline-flex min-w-max rounded-xl bg-muted/70 p-1">
+          <TabsTrigger value="warehouses">Kho đơn vị</TabsTrigger>
+          <TabsTrigger value="allocation-issue">Cấp phát quân trang</TabsTrigger>
+          <TabsTrigger value="other-issue">Xuất khác</TabsTrigger>
+          <TabsTrigger value="issue-history">Lịch sử cấp phát</TabsTrigger>
+        </TabsList>
+      </div>
+    </Card>
   );
 }
 
 export default function InventoryPage() {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingWarehouse, setEditingWarehouse] = useState(null);
-  const [selectedWarehouseId, setSelectedWarehouseId] = useState(() => {
-    if (typeof window === "undefined") return "";
-    return window.localStorage.getItem(INVENTORY_SELECTED_WAREHOUSE_KEY) || "";
-  });
-  const [transferModalOpen, setTransferModalOpen] = useState(false);
-  const [transferItem, setTransferItem] = useState(null);
-  const [adjustModalOpen, setAdjustModalOpen] = useState(false);
-  const [adjustItem, setAdjustItem] = useState(null);
-  const [searchKeyword, setSearchKeyword] = useState("");
+  const [activeTab, setActiveTab] = useState("allocation-issue");
 
-  const { data: warehouseData, refetch: refetchWarehouses } = useGetCategoryWarehousesQuery();
   const { data: categoriesData } = useGetCategoriesQuery({
     status: "active",
     sortBy: "name",
     order: "asc",
   });
-
-  const warehouses = warehouseData?.warehouses || [];
   const categories = categoriesData?.categories || [];
 
-  const currentWarehouseId = Number.parseInt(selectedWarehouseId, 10);
-  const currentWarehouse = warehouses.find((warehouse) => warehouse.id === currentWarehouseId) || null;
-
-  const {
-    data: warehouseItemsData,
-    refetch: refetchWarehouseItems,
-    isFetching: isFetchingWarehouseItems,
-  } = useGetWarehouseCategoryItemsQuery(
-    {
-      warehouseId: currentWarehouseId,
-      search: searchKeyword.trim() || undefined,
-      page: 1,
-      limit: 200,
-    },
-    { skip: !Number.isInteger(currentWarehouseId) || currentWarehouseId <= 0 },
-  );
-
-  const warehouseItems = warehouseItemsData?.items || [];
-
-  const [createCategoryWarehouse, { isLoading: isCreatingWarehouse }] =
-    useCreateCategoryWarehouseMutation();
-  const [updateCategoryWarehouse, { isLoading: isUpdatingWarehouse }] =
-    useUpdateCategoryWarehouseMutation();
-  const [adjustWarehouseCategoryStock, { isLoading: isAdjustingStock }] =
-    useAdjustWarehouseCategoryStockMutation();
-  const [transferWarehouseCategoryStock, { isLoading: isTransferringStock }] =
-    useTransferWarehouseCategoryStockMutation();
-
-  const handleUpsertWarehouse = async ({ name, categoryIds }) => {
-    try {
-      if (editingWarehouse?.id) {
-        await updateCategoryWarehouse({
-          warehouseId: editingWarehouse.id,
-          name,
-          categoryIds: normalizeCategoryIds(categoryIds),
-        }).unwrap();
-        toast.success("Đã cập nhật kho.");
-      } else {
-        await createCategoryWarehouse({
-          name,
-          categoryIds: normalizeCategoryIds(categoryIds),
-        }).unwrap();
-        toast.success("Đã tạo kho.");
-      }
-      setModalOpen(false);
-      setEditingWarehouse(null);
-      refetchWarehouses();
-      if (Number.isInteger(currentWarehouseId) && currentWarehouseId > 0) {
-        refetchWarehouseItems();
-      }
-    } catch (error) {
-      toast.error(getApiErrorMessage(error, "Không thể lưu kho."));
-      throw error;
-    }
-  };
-
-  const handleTransferStock = async ({ toWarehouseId, quantity, note }) => {
-    if (!currentWarehouseId || !transferItem) return;
-
-    try {
-      await transferWarehouseCategoryStock({
-        fromWarehouseId: currentWarehouseId,
-        toWarehouseId,
-        categoryId: transferItem.category.id,
-        versionId: transferItem.version.id,
-        colorId: transferItem.color.id,
-        quantity,
-        note,
-      }).unwrap();
-      toast.success("Đã luân chuyển hàng hoá.");
-      refetchWarehouseItems();
-      refetchWarehouses();
-    } catch (error) {
-      toast.error(getApiErrorMessage(error, "Không thể luân chuyển hàng hoá."));
-      throw error;
-    }
-  };
-
-  const handleAdjustStock = async ({ delta }) => {
-    if (!currentWarehouseId || !adjustItem) return;
-
-    try {
-      await adjustWarehouseCategoryStock({
-        warehouseId: currentWarehouseId,
-        categoryId: adjustItem.category.id,
-        versionId: adjustItem.version.id,
-        colorId: adjustItem.color.id,
-        delta,
-      }).unwrap();
-      toast.success("Đã điều chỉnh tồn kho.");
-      refetchWarehouseItems();
-      refetchWarehouses();
-    } catch (error) {
-      toast.error(getApiErrorMessage(error, "Không thể điều chỉnh tồn kho."));
-      throw error;
-    }
-  };
-
-  const handleWarehouseSelectChange = (event) => {
-    const nextWarehouseId = event.target.value;
-    setSelectedWarehouseId(nextWarehouseId);
-    if (typeof window !== "undefined") {
-      if (nextWarehouseId) {
-        window.localStorage.setItem(INVENTORY_SELECTED_WAREHOUSE_KEY, nextWarehouseId);
-      } else {
-        window.localStorage.removeItem(INVENTORY_SELECTED_WAREHOUSE_KEY);
-      }
-    }
-  };
-
   return (
-    <div className="space-y-6 p-4 sm:p-6">
-      <Card className="p-4 space-y-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <h2 className="font-semibold">Kho quân trang theo đơn vị</h2>
-          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-            <Button
-              type="button"
-              className="w-full sm:w-auto"
-              onClick={() => {
-                setEditingWarehouse(null);
-                setModalOpen(true);
-              }}
-            >
-              Thêm kho
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full sm:w-auto"
-              disabled={!currentWarehouse}
-              onClick={() => {
-                if (!currentWarehouse) return;
-                setEditingWarehouse({
-                  id: currentWarehouse.id,
-                  name: currentWarehouse.name,
-                  linkedCategoryIds: normalizeCategoryIds(
-                    currentWarehouse.linkedCategoryIds || [],
-                  ),
-                });
-                setModalOpen(true);
-              }}
-            >
-              Chỉnh sửa kho đang chọn
-            </Button>
-          </div>
-        </div>
+    <div className="space-y-5 p-3 sm:space-y-6 sm:p-6">
+      <InventoryWorkspaceHero />
 
-        <select
-          className="h-9 w-full max-w-md rounded-md border bg-background px-3 text-sm"
-          value={selectedWarehouseId}
-          onChange={handleWarehouseSelectChange}
-        >
-          <option value="">Chọn kho để xem tồn</option>
-          {warehouses.map((warehouse) => (
-            <option key={warehouse.id} value={warehouse.id}>
-              {warehouse.name}
-            </option>
-          ))}
-        </select>
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-5"
+      >
+        <InventoryTabsHeader />
 
-        {modalOpen ? (
-          <WarehouseModal
-            key={editingWarehouse?.id || "new-warehouse"}
-            open={modalOpen}
-            onOpenChange={(next) => {
-              setModalOpen(next);
-              if (!next) setEditingWarehouse(null);
-            }}
-            initialData={editingWarehouse}
-            categories={categories}
-            onSubmit={handleUpsertWarehouse}
-            isSubmitting={isCreatingWarehouse || isUpdatingWarehouse}
-          />
-        ) : null}
+        <TabsContent value="warehouses" className="mt-0">
+          <WarehouseManagementTab categories={categories} />
+        </TabsContent>
 
-        {transferModalOpen ? (
-          <TransferStockModal
-            open={transferModalOpen}
-            onOpenChange={(next) => {
-              setTransferModalOpen(next);
-              if (!next) setTransferItem(null);
-            }}
-            sourceWarehouse={currentWarehouse}
-            warehouses={warehouses}
-            item={transferItem}
-            onSubmit={handleTransferStock}
-            isSubmitting={isTransferringStock}
-          />
-        ) : null}
+        <TabsContent value="allocation-issue" className="mt-0">
+          <AllocationIssueTab />
+        </TabsContent>
 
-        {adjustModalOpen ? (
-          <AdjustStockModal
-            open={adjustModalOpen}
-            onOpenChange={(next) => {
-              setAdjustModalOpen(next);
-              if (!next) setAdjustItem(null);
-            }}
-            sourceWarehouse={currentWarehouse}
-            item={adjustItem}
-            onSubmit={handleAdjustStock}
-            isSubmitting={isAdjustingStock}
-          />
-        ) : null}
+        <TabsContent value="other-issue" className="mt-0">
+          <OtherIssueTab />
+        </TabsContent>
 
-      </Card>
-
-      <Card className="p-4 space-y-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <h3 className="font-semibold">Tồn kho theo mặt hàng</h3>
-          <Input
-            value={searchKeyword}
-            onChange={(event) => setSearchKeyword(event.target.value)}
-            placeholder="Tìm theo tên, phiên bản, cỡ số..."
-            className="w-full max-w-none sm:max-w-xs"
-            disabled={!currentWarehouseId}
-          />
-        </div>
-
-        {!currentWarehouseId ? (
-          <div className="text-sm text-muted-foreground">Vui lòng chọn kho để xem dữ liệu.</div>
-        ) : isFetchingWarehouseItems ? (
-          <div className="text-sm text-muted-foreground">Đang tải dữ liệu tồn kho...</div>
-        ) : (
-          <div className="overflow-auto rounded-md border">
-            <table className="w-full text-sm">
-              <thead className="bg-background">
-                <tr className="text-left border-b">
-                  <th className="py-2 px-3">Mặt hàng</th>
-                  <th className="py-2 px-3">Tồn kho</th>
-                  <th className="py-2 px-3">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {warehouseItems.map((item) => (
-                  <tr
-                    key={`${item.category.id}-${item.version.id}-${item.color.id}`}
-                    className="border-b last:border-0"
-                  >
-                    <td className="py-2 px-3">{item.category.name}</td>
-                    <td className="py-2 px-3">{item.quantity ?? 0}</td>
-                    <td className="py-2 px-3">
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          className="w-full sm:w-auto"
-                          onClick={() => {
-                            setTransferItem(item);
-                            setTransferModalOpen(true);
-                          }}
-                          disabled={(item.quantity ?? 0) <= 0}
-                        >
-                          Luân chuyển
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          className="w-full sm:w-auto"
-                          onClick={() => {
-                            setAdjustItem(item);
-                            setAdjustModalOpen(true);
-                          }}
-                          disabled={isAdjustingStock}
-                        >
-                          Điều chỉnh tồn
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {!warehouseItems.length ? (
-                  <tr>
-                    <td colSpan={3} className="py-4 text-center text-muted-foreground">
-                      Kho này chưa có mặt hàng nào.
-                    </td>
-                  </tr>
-                ) : null}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
+        <TabsContent value="issue-history" className="mt-0">
+          <IssueHistoryTab />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

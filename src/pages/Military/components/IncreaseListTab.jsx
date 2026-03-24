@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { OverlayLoader } from "@/components/AppLoading";
+import { DISPLAY_LABELS } from "@/utils/constants";
 import { formatMilitaryTypeList } from "../typeUtils";
 import ExternalIncreaseForm from "./ExternalIncreaseForm";
 
@@ -38,7 +39,9 @@ export default function IncreaseListTab({
 
   useEffect(() => {
     setPendingAssignedUnits((prev) => {
-      const validIds = new Set(assignedUnitOptions.map((item) => String(item.id)));
+      const validIds = new Set(
+        assignedUnitOptions.map((item) => String(item.id)),
+      );
       const next = {};
       for (const [requestId, assignedUnitId] of Object.entries(prev)) {
         if (validIds.has(String(assignedUnitId))) {
@@ -54,7 +57,8 @@ export default function IncreaseListTab({
       <OverlayLoader
         show={
           (isFetching && !isLoading) ||
-          (isFetchingIncomingTransferRequests && !isLoadingIncomingTransferRequests)
+          (isFetchingIncomingTransferRequests &&
+            !isLoadingIncomingTransferRequests)
         }
         label="Đang cập nhật danh sách quân nhân tăng..."
       />
@@ -108,13 +112,19 @@ export default function IncreaseListTab({
           <tbody>
             {isLoading || isLoadingIncomingTransferRequests ? (
               <tr>
-                <td colSpan={canManageTransfer ? 12 : 11} className="py-8 text-center text-muted-foreground">
+                <td
+                  colSpan={canManageTransfer ? 12 : 11}
+                  className="py-8 text-center text-muted-foreground"
+                >
                   Đang tải dữ liệu...
                 </td>
               </tr>
             ) : filteredIncreaseRows.length === 0 ? (
               <tr>
-                <td colSpan={canManageTransfer ? 12 : 11} className="py-8 text-center text-muted-foreground">
+                <td
+                  colSpan={canManageTransfer ? 12 : 11}
+                  className="py-8 text-center text-muted-foreground"
+                >
                   Không có dữ liệu phù hợp bộ lọc.
                 </td>
               </tr>
@@ -129,7 +139,9 @@ export default function IncreaseListTab({
                   military.transferInDetail?.toUnitName ||
                   "-";
                 const fromUnitName =
-                  request?.fromUnit?.name || military.transferInDetail?.fromUnitName || "-";
+                  request?.fromUnit?.name ||
+                  military.transferInDetail?.fromUnitName ||
+                  "-";
                 const transferInYear =
                   request?.transferYear ||
                   military.transferInDetail?.transferYear ||
@@ -137,10 +149,14 @@ export default function IncreaseListTab({
                   "-";
                 const typeLabel = isPendingRequest
                   ? formatMilitaryTypeList(request?.type?.code || "-")
-                  : formatMilitaryTypeList(military.types?.length ? military.types : military.type);
+                  : formatMilitaryTypeList(
+                      military.types?.length ? military.types : military.type,
+                    );
 
                 return (
-                  <tr key={`${row.type}-${request?.id || military.id || index}`}>
+                  <tr
+                    key={`${row.type}-${request?.id || military.id || index}`}
+                  >
                     <td>{military.militaryCode || "-"}</td>
                     <td>{military.fullname || "-"}</td>
                     <td>{military.rank || "-"}</td>
@@ -155,7 +171,9 @@ export default function IncreaseListTab({
                       {isPendingRequest ? (
                         <span className="text-amber-700">Chờ nhận bảo đảm</span>
                       ) : (
-                        <span className="text-emerald-700">Đã nhận bảo đảm</span>
+                        <span className="text-emerald-700">
+                          Đã nhận bảo đảm
+                        </span>
                       )}
                     </td>
                     {canManageTransfer && (
@@ -172,7 +190,9 @@ export default function IncreaseListTab({
                               }
                               className="h-8 rounded-md border border-border bg-background px-2 text-xs"
                             >
-                              <option value="">Chọn assignedUnit</option>
+                              <option value="">
+                                Chọn {DISPLAY_LABELS.assignedUnit}
+                              </option>
                               {assignedUnitOptions.map((item) => (
                                 <option key={item.id} value={String(item.id)}>
                                   {item.name}
@@ -193,7 +213,9 @@ export default function IncreaseListTab({
                             </Button>
                           </div>
                         ) : (
-                          <span className="text-xs text-muted-foreground">-</span>
+                          <span className="text-xs text-muted-foreground">
+                            -
+                          </span>
                         )}
                       </td>
                     )}

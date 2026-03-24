@@ -13,7 +13,6 @@ const axiosBaseQuery =
     skipRefresh,
   }) => {
     try {
-      const isBodyless = method === "get" || method === "delete";
       const config = {
         params,
         responseType,
@@ -21,9 +20,17 @@ const axiosBaseQuery =
         skipRefresh,
       };
 
-      const result = isBodyless
-        ? await http[method](url, config)
-        : await http[method](url, data, config);
+      let result;
+      if (method === "get") {
+        result = await http[method](url, config);
+      } else if (method === "delete") {
+        result = await http.delete(url, {
+          ...config,
+          data,
+        });
+      } else {
+        result = await http[method](url, data, config);
+      }
 
       return { data: result };
     } catch (error) {
